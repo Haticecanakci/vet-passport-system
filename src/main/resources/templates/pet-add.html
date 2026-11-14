@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yeni Evcil Hayvan Kaydı & Pasaport | VetPassport</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              500: '#14b8a6',
+              600: '#0d9488',
+              700: '#0f766e',
+              800: '#115e59',
+              900: '#134e4a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen font-sans antialiased">
+
+  <!-- ================= ORTAK NAVBAR ================= -->
+  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-emerald-100 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 py-3 flex items-center justify-between gap-4">
+      
+      <!-- Brand Logo -->
+      <a href="/" class="flex items-center gap-2.5 group shrink-0">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-teal-600 to-emerald-500 flex items-center justify-center text-white text-lg shadow-md shadow-teal-500/20 group-hover:scale-105 transition-transform">
+          <i class="fa-solid fa-paw"></i>
+        </div>
+        <div class="hidden sm:block">
+          <span class="text-lg font-bold bg-gradient-to-r from-teal-700 to-emerald-600 bg-clip-text text-transparent">VetPassport</span>
+          <span class="block text-[10px] font-medium text-teal-600 uppercase tracking-wider">Takip Sistemi</span>
+        </div>
+      </a>
+
+      <!-- Navigation Links -->
+      <nav class="hidden lg:flex items-center gap-1.5 text-xs font-semibold text-slate-600">
+        <a href="/dashboard" class="px-3 py-2 rounded-xl hover:bg-slate-100 hover:text-teal-700 flex items-center gap-1.5 transition-all">
+          <i class="fa-solid fa-chart-pie text-teal-500"></i> Panel
+        </a>
+        <a href="/pets/new" class="px-3 py-2 rounded-xl bg-teal-50 text-teal-700 border border-teal-200 flex items-center gap-1.5 transition-all">
+          <i class="fa-solid fa-plus-circle text-teal-600"></i> Yeni Hayvan
+        </a>
+        <a href="/passport" class="px-3 py-2 rounded-xl hover:bg-slate-100 hover:text-teal-700 flex items-center gap-1.5 transition-all">
+          <i class="fa-solid fa-id-card text-teal-500"></i> Pasaport
+        </a>
+        <a href="/appointments" class="px-3 py-2 rounded-xl hover:bg-slate-100 hover:text-teal-700 flex items-center gap-1.5 transition-all">
+          <i class="fa-solid fa-calendar-check text-teal-500"></i> Randevular
+        </a>
+        <a href="/vet/exam" class="px-3 py-2 rounded-xl hover:bg-slate-100 hover:text-teal-700 flex items-center gap-1.5 transition-all">
+          <i class="fa-solid fa-stethoscope text-teal-500"></i> Muayene
+        </a>
+        <a href="/emergency" class="px-3 py-2 rounded-xl hover:bg-red-50 text-red-600 flex items-center gap-1.5 transition-all">
+          <i class="fa-solid fa-truck-medical text-red-500"></i> Acil Nöbetçi
+        </a>
+      </nav>
+
+      <!-- ROLE SWITCHER (VİZE SUNUMU TEK TIKLA GEÇİŞ) -->
+      <div class="flex items-center gap-2">
+        <div class="flex items-center bg-slate-100 p-1 rounded-2xl border border-slate-200 shadow-inner">
+          <button 
+            type="button" 
+            id="navRoleOwnerBtn" 
+            onclick="switchCurrentRole('OWNER')"
+            class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
+            title="Hayvan Sahibi Görünümüne Geç"
+          >
+            <span>🏠</span>
+            <span class="hidden sm:inline">Hayvan Sahibi</span>
+          </button>
+          <button 
+            type="button" 
+            id="navRoleVetBtn" 
+            onclick="switchCurrentRole('VET')"
+            class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 text-slate-500 hover:text-slate-800"
+            title="Veteriner Hekim Görünümüne Geç"
+          >
+            <span>🩺</span>
+            <span class="hidden sm:inline">Veteriner Hekim</span>
+          </button>
+        </div>
+
+        <!-- Verileri Sıfırla Butonu (Vize Sunumu Demo Testleri İçin) -->
+        <button 
+          type="button" 
+          onclick="resetAllDemoData()" 
+          class="w-9 h-9 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 flex items-center justify-center text-sm transition-colors" 
+          title="Verileri Başlangıç Demo Durumuna Sıfırla"
+        >
+          <i class="fa-solid fa-rotate-left"></i>
+        </button>
+
+        <a href="/login" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-sm transition-colors" title="Giriş Ekranına Dön">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </a>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ================= MAIN CONTAINER ================= -->
+  <main class="flex-1 max-w-4xl mx-auto px-4 sm:px-6 py-8 w-full">
+    
+    <!-- Page Header -->
+    <div class="mb-8">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-100 text-teal-800 text-xs font-semibold mb-2">
+        <i class="fa-solid fa-shield-cat"></i> Dijital Pasaport Oluşturucu
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Yeni Evcil Hayvan Kaydı</h1>
+      <p class="text-xs sm:text-sm text-slate-500 mt-1">
+        Bilgileri eksiksiz doldurun; sistem türüne göre otomatik aşı takvimi ve benzersiz bir Sağlık Pasaport Numarası üretecektir.
+      </p>
+    </div>
+
+    <!-- Registration Form -->
+    <form id="petAddForm" onsubmit="handlePetSubmit(event)" class="space-y-6">
+
+      <!-- SECTION 1: TEMEL KİMLİK BİLGİLERİ -->
+      <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
+        <div class="flex items-center gap-3 pb-4 border-b border-slate-100">
+          <div class="w-10 h-10 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-paw"></i>
+          </div>
+          <div>
+            <h2 class="text-base font-bold text-slate-900">1. Temel Kimlik Bilgileri</h2>
+            <p class="text-xs text-slate-500">Dostunuzun genel tanım ve ırk özellikleri</p>
+          </div>
+        </div>
+
+        <!-- Avatar Emoji Seçici -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-2">Avatar / Profil Simgesi</label>
+          <div class="flex flex-wrap items-center gap-3" id="emojiSelector">
+            <label class="cursor-pointer">
+              <input type="radio" name="photoEmoji" value="🐱" checked class="peer sr-only">
+              <div class="w-12 h-12 rounded-2xl bg-slate-100 peer-checked:bg-teal-100 peer-checked:ring-2 peer-checked:ring-teal-600 text-2xl flex items-center justify-center transition-all">
+                🐱
+              </div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="photoEmoji" value="🐶" class="peer sr-only">
+              <div class="w-12 h-12 rounded-2xl bg-slate-100 peer-checked:bg-teal-100 peer-checked:ring-2 peer-checked:ring-teal-600 text-2xl flex items-center justify-center transition-all">
+                🐶
+              </div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="photoEmoji" value="🐰" class="peer sr-only">
+              <div class="w-12 h-12 rounded-2xl bg-slate-100 peer-checked:bg-teal-100 peer-checked:ring-2 peer-checked:ring-teal-600 text-2xl flex items-center justify-center transition-all">
+                🐰
+              </div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="photoEmoji" value="🦜" class="peer sr-only">
+              <div class="w-12 h-12 rounded-2xl bg-slate-100 peer-checked:bg-teal-100 peer-checked:ring-2 peer-checked:ring-teal-600 text-2xl flex items-center justify-center transition-all">
+                🦜
+              </div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="photoEmoji" value="🐹" class="peer sr-only">
+              <div class="w-12 h-12 rounded-2xl bg-slate-100 peer-checked:bg-teal-100 peer-checked:ring-2 peer-checked:ring-teal-600 text-2xl flex items-center justify-center transition-all">
+                🐹
+              </div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="photoEmoji" value="🐾" class="peer sr-only">
+              <div class="w-12 h-12 rounded-2xl bg-slate-100 peer-checked:bg-teal-100 peer-checked:ring-2 peer-checked:ring-teal-600 text-2xl flex items-center justify-center transition-all">
+                🐾
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Hayvan Adı -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Hayvanın Adı *</label>
+            <input 
+              type="text" 
+              id="petName" 
+              required 
+              placeholder="Örn: Pamuk, Boncuk, Ateş" 
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+            />
+          </div>
+
+          <!-- Tür -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Türü * (Aşı Takvimini Belirler)</label>
+            <select 
+              id="petSpecies" 
+              required 
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none bg-white"
+            >
+              <option value="Kedi" selected>🐱 Kedi (Tricat + FeLV + Kuduz vb.)</option>
+              <option value="Köpek">🐶 Köpek (Karma + Bordetella + Kuduz vb.)</option>
+              <option value="Tavşan">🐰 Tavşan (VHD + Miyomatozis)</option>
+              <option value="Kuş">🦜 Kuş (Newcastle + Poliomyelit)</option>
+            </select>
+          </div>
+
+          <!-- Irk -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Irkı / Cinsi *</label>
+            <input 
+              type="text" 
+              id="petBreed" 
+              required 
+              placeholder="Örn: British Shorthair, Golden Retriever, Tekir" 
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+            />
+          </div>
+
+          <!-- Cinsiyet -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Cinsiyet *</label>
+            <div class="grid grid-cols-2 gap-2">
+              <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 cursor-pointer hover:border-teal-400 has-[:checked]:border-teal-600 has-[:checked]:bg-teal-50/60 transition-all">
+                <input type="radio" name="petGender" value="Dişi" checked class="text-teal-600 focus:ring-teal-500">
+                <span class="text-xs font-medium text-slate-700">♀ Dişi</span>
+              </label>
+              <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 cursor-pointer hover:border-teal-400 has-[:checked]:border-teal-600 has-[:checked]:bg-teal-50/60 transition-all">
+                <input type="radio" name="petGender" value="Erkek" class="text-teal-600 focus:ring-teal-500">
+                <span class="text-xs font-medium text-slate-700">♂ Erkek</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Doğum Tarihi -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Doğum Tarihi *</label>
+            <input 
+              type="date" 
+              id="petBirthDate" 
+              required 
+              value="2023-05-10"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+            />
+          </div>
+
+          <!-- Renk & Eşkâl -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Renk / Belirgin Özellik</label>
+            <input 
+              type="text" 
+              id="petColor" 
+              placeholder="Örn: Beyaz, Sağ göz mavi sol göz kehribar" 
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 2: SAĞLIK & KİMLİK BİLGİLERİ -->
+      <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
+        <div class="flex items-center gap-3 pb-4 border-b border-slate-100">
+          <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-notes-medical"></i>
+          </div>
+          <div>
+            <h2 class="text-base font-bold text-slate-900">2. Sağlık Parametreleri & Mikroçip</h2>
+            <p class="text-xs text-slate-500">Acil durumlar ve veteriner müdahaleleri için kritik veriler</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Kilo -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Mevcut Kilo (kg) *</label>
+            <div class="relative">
+              <input 
+                type="number" 
+                step="0.1" 
+                id="petWeight" 
+                required 
+                placeholder="4.2" 
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+              />
+              <span class="absolute right-3.5 top-2.5 text-xs text-slate-400 font-semibold">kg</span>
+            </div>
+          </div>
+
+          <!-- Kan Grubu -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Kan Grubu</label>
+            <select 
+              id="petBloodType" 
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none bg-white"
+            >
+              <option value="A Grubu (Feline)" selected>A Grubu (Kedi)</option>
+              <option value="B Grubu (Feline)">B Grubu (Kedi)</option>
+              <option value="AB Grubu (Feline)">AB Grubu (Kedi)</option>
+              <option value="DEA 1.1 + (Canine)">DEA 1.1 Pozitif (Köpek)</option>
+              <option value="DEA 1.1 - (Canine)">DEA 1.1 Negatif (Köpek)</option>
+              <option value="Bilinmiyor">Bilinmiyor</option>
+            </select>
+          </div>
+
+          <!-- Mikroçip Numarası (Otomatik üretim butonuyla) -->
+          <div class="sm:col-span-2">
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-xs font-semibold text-slate-700">Mikroçip Numarası *</label>
+              <button 
+                type="button" 
+                onclick="generateRandomChip()" 
+                class="text-[11px] font-bold text-teal-700 hover:text-teal-800 flex items-center gap-1"
+              >
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Rastgele Çip Üret
+              </button>
+            </div>
+            <div class="relative">
+              <i class="fa-solid fa-microchip absolute left-3.5 top-3 text-slate-400 text-sm"></i>
+              <input 
+                type="text" 
+                id="petMicrochip" 
+                required 
+                placeholder="Örn: MC987654321" 
+                class="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+              />
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1">Sokakta kaybolduğunda bu numarayla anında sahibi tespit edilebilir.</p>
+          </div>
+
+          <!-- Kısırlaştırma Durumu -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Kısırlaştırılmış mı?</label>
+            <div class="grid grid-cols-2 gap-2">
+              <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 cursor-pointer has-[:checked]:border-teal-600 has-[:checked]:bg-teal-50/60 transition-all">
+                <input type="radio" name="petSterilized" value="Evet" checked class="text-teal-600">
+                <span class="text-xs font-medium text-slate-700">Evet</span>
+              </label>
+              <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 cursor-pointer has-[:checked]:border-teal-600 has-[:checked]:bg-teal-50/60 transition-all">
+                <input type="radio" name="petSterilized" value="Hayır" class="text-teal-600">
+                <span class="text-xs font-medium text-slate-700">Hayır</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Alerji ve Kronik Rahatsızlık -->
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Alerjiler & Kronik Notlar</label>
+            <textarea 
+              id="petAllergies" 
+              rows="2" 
+              placeholder="Örn: Tavuk proteinine alerjisi var, anestezi duyarlılığı mevcut..." 
+              class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+            ></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 3: SAHİP İLETİŞİM BİLGİLERİ -->
+      <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-4">
+        <div class="flex items-center gap-3 pb-4 border-b border-slate-100">
+          <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-address-book"></i>
+          </div>
+          <div>
+            <h2 class="text-base font-bold text-slate-900">3. Sahip & İletişim Bilgileri</h2>
+            <p class="text-xs text-slate-500">Pasaport üzerinde görünecek resmi sahip bilgileri</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Sahip Ad Soyad *</label>
+            <input 
+              type="text" 
+              id="petOwnerName" 
+              required 
+              value="Ahmet Yılmaz" 
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Acil İletişim Telefonu *</label>
+            <input 
+              type="tel" 
+              id="petOwnerPhone" 
+              required 
+              value="0532 111 2233" 
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center justify-end gap-3 pt-2">
+        <a href="/dashboard" class="px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors">
+          İptal
+        </a>
+        <button 
+          type="submit" 
+          class="px-8 py-3.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-bold text-xs shadow-lg shadow-teal-600/25 transition-all flex items-center gap-2 transform active:scale-95"
+        >
+          <i class="fa-solid fa-check"></i>
+          <span>Evcil Hayvanı Kaydet & Pasaport Oluştur</span>
+        </button>
+      </div>
+
+    </form>
+  </main>
+
+  <!-- ================= BASARI / PASAPORT MODAL PENCERESİ ================= -->
+  <div id="successModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-emerald-100 transform transition-all animate-in fade-in zoom-in duration-200">
+      
+      <!-- Top Icon & Celebration -->
+      <div class="text-center space-y-2">
+        <div class="w-16 h-16 rounded-3xl bg-emerald-100 text-emerald-600 text-3xl flex items-center justify-center mx-auto shadow-inner">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <h3 class="text-xl font-extrabold text-slate-900">Dijital Pasaport Başarıyla Oluşturuldu!</h3>
+        <p class="text-xs text-slate-500">
+          Evcil dostunuz sisteme kaydedildi ve türe özel başlangıç aşı takvimi otomatik tanımlandı.
+        </p>
+      </div>
+
+      <!-- Passport Card Badge -->
+      <div class="mt-6 p-4 rounded-2xl bg-gradient-to-br from-teal-800 to-emerald-900 text-white space-y-3 shadow-lg">
+        <div class="flex items-center justify-between text-[11px] text-teal-200 border-b border-teal-700/60 pb-2">
+          <span>T.C. EVCİL HAYVAN SAĞLIK PASAPORTU</span>
+          <span class="font-bold text-emerald-300">RESMİ ONAYLI</span>
+        </div>
+
+        <div class="flex items-center justify-between gap-4">
+          <div class="space-y-1">
+            <span class="text-[10px] text-teal-300 uppercase tracking-widest block">Pasaport Numarası</span>
+            <div id="modalPassportNo" class="text-lg sm:text-xl font-mono font-black text-amber-300 tracking-wider">
+              VPP-2026-XXXX
+            </div>
+            <div id="modalPetTitle" class="text-xs text-slate-100 font-semibold">
+              Boncuk (Kedi - Tekir)
+            </div>
+          </div>
+
+          <!-- QR Code Preview Image -->
+          <div class="bg-white p-1.5 rounded-xl shadow-md shrink-0">
+            <img id="modalQrImg" src="" alt="QR Kod" class="w-20 h-20 rounded object-contain"/>
+          </div>
+        </div>
+
+        <div class="text-[11px] text-teal-200 pt-2 border-t border-teal-700/60 flex items-center justify-between">
+          <span id="modalChipNo">Çip: MC0000000</span>
+          <span>Takvim: 5 Aşı Eklendi</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="mt-6 space-y-2.5">
+        <button 
+          type="button" 
+          id="btnGoPassport" 
+          class="w-full py-3.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2"
+        >
+          <i class="fa-solid fa-id-card"></i>
+          <span>Dijital Pasaport Sayfasına Git</span>
+        </button>
+
+        <div class="grid grid-cols-2 gap-2">
+          <a 
+            href="/dashboard" 
+            class="py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs text-center transition-colors"
+          >
+            Panele Dön
+          </a>
+          <button 
+            type="button" 
+            onclick="resetFormForNewPet()" 
+            class="py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs text-center transition-colors"
+          >
+            + Başka Dost Ekle
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Central LocalStorage Script -->
+  <script src="/js/app.js"></script>
+
+  <!-- Page Logic -->
+  <script>
+    let createdPetId = null;
+
+    // Rastgele mikroçip üretimi
+    function generateRandomChip() {
+      const randomNum = Math.floor(100000000 + Math.random() * 900000000);
+      document.getElementById('petMicrochip').value = `MC${randomNum}`;
+    }
+
+    // Rol geçişini yönet ve arayüzü güncelle
+    function switchCurrentRole(targetRole) {
+      if (window.VP && VP.role) {
+        VP.role.switchTo(targetRole);
+      }
+    }
+
+    // Form submit işleyicisi
+    function handlePetSubmit(e) {
+      e.preventDefault();
+
+      const name = document.getElementById('petName').value.trim();
+      const species = document.getElementById('petSpecies').value;
+      const breed = document.getElementById('petBreed').value.trim();
+      const gender = document.querySelector('input[name="petGender"]:checked')?.value || 'Dişi';
+      const birthDate = document.getElementById('petBirthDate').value;
+      const color = document.getElementById('petColor').value.trim();
+      const photoEmoji = document.querySelector('input[name="photoEmoji"]:checked')?.value || '🐾';
+
+      const weight = document.getElementById('petWeight').value;
+      const bloodType = document.getElementById('petBloodType').value;
+      const microchipNo = document.getElementById('petMicrochip').value.trim();
+      const sterilized = document.querySelector('input[name="petSterilized"]:checked')?.value || 'Evet';
+      const allergies = document.getElementById('petAllergies').value.trim();
+
+      const ownerName = document.getElementById('petOwnerName').value.trim();
+      const ownerPhone = document.getElementById('petOwnerPhone').value.trim();
+
+      const petData = {
+        name,
+        species,
+        breed,
+        gender,
+        birthDate,
+        color,
+        photoEmoji,
+        weight: parseFloat(weight) || 0,
+        bloodType,
+        microchipNo,
+        sterilized,
+        allergies,
+        ownerId: 'OWN001',
+        ownerName,
+        ownerPhone
+      };
+
+      // VP.registerPet çağrısı
+      const newPet = VP.registerPet(petData);
+      createdPetId = newPet.id;
+
+      // Kilo kaydı ekle
+      if (petData.weight > 0 && VP.weights) {
+        VP.weights.add({
+          id: `W-${VP.uid()}`,
+          petId: newPet.id,
+          date: VP.today(),
+          weight: petData.weight
+        });
+      }
+
+      // Modalı hazırla ve aç
+      document.getElementById('modalPassportNo').textContent = newPet.passportNo;
+      document.getElementById('modalPetTitle').textContent = `${newPet.name} (${newPet.species} - ${newPet.breed})`;
+      document.getElementById('modalChipNo').textContent = `Çip: ${newPet.microchipNo}`;
+
+      // QR Kod oluşturucu URL
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(newPet.passportNo)}`;
+      document.getElementById('modalQrImg').src = qrUrl;
+
+      // Pasaporta git butonunun hedefi
+      document.getElementById('btnGoPassport').onclick = () => {
+        if (window.VP && VP.activePet) {
+          VP.activePet.set(newPet.id);
+        }
+        window.location.href = `/passport?petId=${newPet.id}`;
+      };
+
+      document.getElementById('successModal').classList.remove('hidden');
+    }
+
+    // Modal kapat ve yeni form aç
+    function resetFormForNewPet() {
+      document.getElementById('successModal').classList.add('hidden');
+      document.getElementById('petAddForm').reset();
+      generateRandomChip();
+    }
+
+    // Sayfa açıldığında rol butonlarını güncelle ve başlangıç çip numarası oluştur
+    document.addEventListener('DOMContentLoaded', () => {
+      const activeRole = VP.role ? VP.role.get() : 'OWNER';
+      const ownerBtn = document.getElementById('navRoleOwnerBtn');
+      const vetBtn = document.getElementById('navRoleVetBtn');
+
+      if (activeRole === 'VET') {
+        vetBtn.className = "px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 bg-blue-600 text-white shadow-sm";
+        ownerBtn.className = "px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 text-slate-500 hover:text-slate-800";
+      } else {
+        ownerBtn.className = "px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 bg-teal-600 text-white shadow-sm";
+        vetBtn.className = "px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 text-slate-500 hover:text-slate-800";
+      }
+
+      generateRandomChip();
+    });
+  </script>
+</body>
+</html>

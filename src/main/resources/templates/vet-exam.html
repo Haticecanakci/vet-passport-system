@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veteriner Muayene & Reçete | VetPassport</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              500: '#14b8a6',
+              600: '#0d9488',
+              700: '#0f766e',
+              800: '#115e59',
+              900: '#134e4a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen font-sans antialiased">
+
+  <!-- ================= ORTAK NAVBAR ================= -->
+  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-emerald-100 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 py-3 flex items-center justify-between gap-4">
+      
+      <!-- Brand Logo -->
+      <a href="/" class="flex items-center gap-2.5 group shrink-0">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-teal-600 to-emerald-500 flex items-center justify-center text-white text-lg shadow-md shadow-teal-500/20 group-hover:scale-105 transition-transform">
+          <i class="fa-solid fa-paw"></i>
+        </div>
+        <div class="hidden sm:block">
+          <span class="text-lg font-bold bg-gradient-to-r from-teal-700 to-emerald-600 bg-clip-text text-transparent">VetPassport</span>
+          <span class="block text-[10px] font-medium text-teal-600 uppercase tracking-wider">Takip Sistemi</span>
+        </div>
+      </a>
+
+      <!-- Navigation Links -->
+      <nav class="hidden lg:flex items-center gap-1.5 text-xs font-semibold text-slate-600">
+        <a href="/dashboard" class="px-3 py-2 rounded-xl hover:bg-slate-100 hover:text-teal-700 flex items-center gap-1.5 transition-all">
+          <i class="fa-solid fa-chart-pie text-teal-500"></i> Panel
+        </a>
+        <a href="/pets/new" class="px-3 py-2 rounded-xl hover:bg-slate-100 hover:text-teal-700 flex items-center gap-1.5 transition-all">
+          <i class="fa-solid fa-plus-circle text-teal-500"></i> Yeni Hayvan
+        </a>
+        <a href="/passport" class="px-3 py-2 rounded-xl hover:bg-slate-100 hover:text-teal-700 flex items-center gap-1.5 transition-all">
+          <i class="fa-solid fa-id-card text-teal-500"></i> Pasaport
+        </a>
+        <a href="/appointments" class="px-3 py-2 rounded-xl hover:bg-slate-100 hover:text-teal-700 flex items-center gap-1.5 transition-all">
+          <i class="fa-solid fa-calendar-check text-teal-500"></i> Randevular
+        </a>
+        <a href="/vet/exam" class="px-3 py-2 rounded-xl bg-teal-50 text-teal-700 border border-teal-200 flex items-center gap-1.5 transition-all">
+          <i class="fa-solid fa-stethoscope text-teal-600"></i> Muayene
+        </a>
+        <a href="/emergency" class="px-3 py-2 rounded-xl hover:bg-red-50 text-red-600 flex items-center gap-1.5 transition-all">
+          <i class="fa-solid fa-truck-medical text-red-500"></i> Acil Nöbetçi
+        </a>
+      </nav>
+
+      <!-- ROLE SWITCHER (VİZE SUNUMU TEK TIKLA GEÇİŞ) -->
+      <div class="flex items-center gap-2">
+        <div class="flex items-center bg-slate-100 p-1 rounded-2xl border border-slate-200 shadow-inner">
+          <button 
+            type="button" 
+            id="navRoleOwnerBtn" 
+            onclick="switchCurrentRole('OWNER')"
+            class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
+            title="Hayvan Sahibi Görünümüne Geç"
+          >
+            <span>🏠</span>
+            <span class="hidden sm:inline">Hayvan Sahibi</span>
+          </button>
+          <button 
+            type="button" 
+            id="navRoleVetBtn" 
+            onclick="switchCurrentRole('VET')"
+            class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 text-slate-500 hover:text-slate-800"
+            title="Veteriner Hekim Görünümüne Geç"
+          >
+            <span>🩺</span>
+            <span class="hidden sm:inline">Veteriner Hekim</span>
+          </button>
+        </div>
+
+        <!-- Verileri Sıfırla Butonu (Vize Sunumu Demo Testleri İçin) -->
+        <button 
+          type="button" 
+          onclick="resetAllDemoData()" 
+          class="w-9 h-9 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 flex items-center justify-center text-sm transition-colors" 
+          title="Verileri Başlangıç Demo Durumuna Sıfırla"
+        >
+          <i class="fa-solid fa-rotate-left"></i>
+        </button>
+
+        <a href="/login" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-sm transition-colors" title="Giriş Ekranına Dön">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </a>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ================= MAIN CONTAINER ================= -->
+  <main class="flex-1 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-8">
+    
+    <!-- Top Selector Bar (Hasta / Randevu Seçici) -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center text-lg">
+          <i class="fa-solid fa-user-doctor"></i>
+        </div>
+        <div>
+          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Muayene Masasındaki Hasta:</span>
+          <div class="flex items-center gap-2">
+            <select 
+              id="patientSelector" 
+              onchange="onPatientChange(this.value)" 
+              class="font-bold text-sm text-slate-900 bg-transparent outline-none cursor-pointer hover:text-blue-700"
+            >
+              <!-- Filled with pets and active appointments -->
+            </select>
+            <i class="fa-solid fa-chevron-down text-xs text-slate-400"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <span class="text-xs font-medium text-slate-500">
+          Uygulayan Hekim: <strong class="text-slate-800 font-bold" id="activeVetLabel">Dr. Selin Demir</strong>
+        </span>
+        <a 
+          id="btnViewFullPassport" 
+          href="/passport" 
+          class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1.5 transition-colors"
+        >
+          <i class="fa-solid fa-id-card"></i>
+          <span>Pasaportu Aç</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- BÖLÜM 1: HASTA ÖZET & ALERJİ UYARI KARTI                            -->
+    <!-- =================================================================== -->
+    <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+        
+        <!-- Sol: Hayvan Kimlik Özeti -->
+        <div class="md:col-span-5 flex items-center gap-4">
+          <div id="patientAvatar" class="w-18 h-18 rounded-2xl bg-teal-50 border-2 border-teal-200 text-4xl flex items-center justify-center shadow-inner shrink-0">
+            🐱
+          </div>
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <h2 id="patientName" class="text-xl font-bold text-slate-900">Pamuq</h2>
+              <span id="patientSpeciesBadge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-100 text-teal-800">
+                Kedi
+              </span>
+            </div>
+            <p id="patientBreed" class="text-xs text-slate-500">Van Kedisi • Beyaz • Dişi</p>
+            <div class="flex items-center gap-2 text-xs font-mono text-slate-600">
+              <span id="patientPassportNo" class="font-bold text-teal-700">VPP-2024-PET001</span>
+              <span>•</span>
+              <span id="patientMicrochipNo">MC123456789</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Orta: Randevu & Sahip Bilgisi -->
+        <div class="md:col-span-3 text-xs space-y-1 border-t md:border-t-0 md:border-l border-slate-100 pt-3 md:pt-0 md:pl-5">
+          <span class="text-slate-400 font-semibold block text-[10px] uppercase">Kayıtlı Sahip:</span>
+          <div id="patientOwnerName" class="font-bold text-slate-800">Ahmet Yılmaz</div>
+          <div id="patientOwnerPhone" class="font-mono text-slate-600">0532 111 2233</div>
+          <div id="patientAptReason" class="text-[11px] text-blue-700 font-semibold pt-1">
+            Geliş: Rutin Kontrol
+          </div>
+        </div>
+
+        <!-- Sağ: Dikkat Çekici Alerji & Tıbbi Uyarı Kutusu -->
+        <div class="md:col-span-4 p-3.5 rounded-2xl bg-amber-50 border-2 border-amber-300 space-y-1">
+          <div class="flex items-center gap-1.5 text-xs font-bold text-amber-900 uppercase">
+            <i class="fa-solid fa-triangle-exclamation text-amber-600 animate-pulse"></i>
+            <span>Tıbbi Uyarı & Alerji:</span>
+          </div>
+          <div id="patientAllergiesText" class="text-xs text-amber-950 font-medium">
+            ⚠️ Tavuk proteini ve laktoz intoleransı mevcuttur!
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 2 Sütunlu Çalışma Alanı: Muayene/Reçete & Aşı Uygulama -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <!-- =================================================================== -->
+      <!-- BÖLÜM 2: KLİNİK MUAYENE VE DİNAMİK REÇETE FORMU (SOL SÜTUN)        -->
+      <!-- =================================================================== -->
+      <div class="lg:col-span-7 bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6">
+        
+        <div class="flex items-center gap-3 pb-4 border-b border-slate-100">
+          <div class="w-10 h-10 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-clipboard-check"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-900">Klinik Muayene Kaydı</h3>
+            <p class="text-xs text-slate-500">Fiziki muayene bulguları, tanı ve tedavi protokolü</p>
+          </div>
+        </div>
+
+        <form id="vetExamForm" onsubmit="handleSaveExam(event)" class="space-y-5">
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Güncel Kilo -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Mevcut Tartılan Kilo (kg) *</label>
+              <div class="relative">
+                <input 
+                  type="number" 
+                  step="0.1" 
+                  id="examWeight" 
+                  required 
+                  placeholder="4.5" 
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+                />
+                <span class="absolute right-3.5 top-2.5 text-xs text-slate-400 font-semibold">kg</span>
+              </div>
+            </div>
+
+            <!-- Muayene Yapan Hekim -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Muayene Eden Hekim *</label>
+              <input 
+                type="text" 
+                id="examVetName" 
+                required 
+                value="Dr. Selin Demir" 
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none font-medium text-slate-700"
+              />
+            </div>
+          </div>
+
+          <!-- Şikayet & Klinik Bulgular -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Geliş Şikayeti & Klinik Bulgular *</label>
+            <textarea 
+              id="examComplaint" 
+              rows="2" 
+              required
+              placeholder="Örn: Sol kulakta akıntı, kaşıntı ve kızarıklık. Vücut ısısı: 38.6°C..." 
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+            ></textarea>
+          </div>
+
+          <!-- Teşhis -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Klinik Teşhis (Tanı) *</label>
+            <input 
+              type="text" 
+              id="examDiagnosis" 
+              required 
+              placeholder="Örn: Akut Otitis Externa (Bakteriyel Kulak Enfeksiyonu)" 
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none font-bold text-slate-800"
+            />
+          </div>
+
+          <!-- Tedavi Protokolü -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Uygulanan Tedavi & Yapılan İşlemler</label>
+            <textarea 
+              id="examTreatment" 
+              rows="2" 
+              placeholder="Örn: Kulak temizleme solüsyonu ile irigasyon yapıldı, antibiyotikli damla uygulandı." 
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+            ></textarea>
+          </div>
+
+          <!-- ============================================================= -->
+          <!-- DİNAMİK REÇETE BÖLÜMÜ (+ İLAÇ EKLE BUTONLU)                  -->
+          <!-- ============================================================= -->
+          <div class="pt-4 border-t border-slate-100 space-y-3">
+            
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-prescription text-teal-600"></i>
+                <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wide">Elektronik Reçete İlaçları</h4>
+              </div>
+              <button 
+                type="button" 
+                onclick="addPrescriptionRow()" 
+                class="px-3 py-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-700 font-bold text-xs flex items-center gap-1.5 border border-teal-200 transition-colors"
+              >
+                <i class="fa-solid fa-plus"></i> İlaç Ekle
+              </button>
+            </div>
+
+            <!-- Dinamik Satırlar -->
+            <div id="prescriptionRowsContainer" class="space-y-2.5">
+              <!-- Dynamically populated rows -->
+            </div>
+
+            <!-- Reçete Notu -->
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-500 mb-1">Reçete Kullanım Tavsiyesi</label>
+              <input 
+                type="text" 
+                id="prescriptionNotes" 
+                placeholder="Örn: İlaçlar tok karnına verilmeli, tedavi süresince su teması önlenmeli." 
+                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none"
+              />
+            </div>
+
+          </div>
+
+          <!-- Submit Button -->
+          <div class="pt-3">
+            <button 
+              type="submit" 
+              class="w-full py-3.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-bold text-xs shadow-lg shadow-teal-600/20 transition-all flex items-center justify-center gap-2 transform active:scale-95"
+            >
+              <i class="fa-solid fa-check"></i>
+              <span>Muayeneyi Kaydet & Reçeteyi Onayla</span>
+            </button>
+          </div>
+
+        </form>
+
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- BÖLÜM 3: ETKİLEŞİMLİ AŞI UYGULAMA ALANI (SAĞ SÜTUN)                 -->
+      <!-- =================================================================== -->
+      <div class="lg:col-span-5 bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6">
+        
+        <div class="flex items-center gap-3 pb-4 border-b border-slate-100">
+          <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-syringe"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-900">Aşı Uygulama & Rapel</h3>
+            <p class="text-xs text-slate-500">Bekleyen aşıları uygulayın; sonraki doz otomatik hesaplansın</p>
+          </div>
+        </div>
+
+        <div id="pendingVaccinesContainer" class="space-y-3">
+          <!-- Dynamically populated with pending vaccines for the pet -->
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="mt-auto bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400">
+    <div class="max-w-7xl mx-auto px-4">
+      VetPassport • Evcil Hayvan Sağlık Pasaportu & Veteriner Takip Sistemi (Vize Prototipi)
+    </div>
+  </footer>
+
+  <!-- Central LocalStorage Script -->
+  <script src="/js/app.js"></script>
+
+  <!-- Vet Exam Page Logic -->
+  <script>
+    let currentExamPet = null;
+    let selectedAppointmentId = null;
+
+    // Rol değiştir
+    function switchCurrentRole(targetRole) {
+      if (window.VP && VP.role) {
+        VP.role.switchTo(targetRole);
+      }
+    }
+
+    // URL Parametrelerini Çöz
+    function parseUrlParams() {
+      const p = new URLSearchParams(window.location.search);
+      return {
+        petId: p.get('petId') || p.get('id') || '',
+        appointmentId: p.get('appointmentId') || p.get('aptId') || ''
+      };
+    }
+
+    // Hasta Seçici Dropdownunu Doldur
+    function initPatientSelector() {
+      const selector = document.getElementById('patientSelector');
+      const allPets = VP.pets ? VP.pets.all() : [];
+      const appointments = VP.appointments ? VP.appointments.all().filter(a => a.status === 'confirmed') : [];
+      
+      const params = parseUrlParams();
+      selectedAppointmentId = params.appointmentId;
+
+      let targetPetId = params.petId;
+
+      // Randevu ID verilmişse petId'yi o randevudan bul
+      if (selectedAppointmentId) {
+        const apt = appointments.find(a => a.id === selectedAppointmentId);
+        if (apt) {
+          targetPetId = apt.petId;
+        }
+      }
+
+      if (!targetPetId && allPets.length > 0) {
+        targetPetId = allPets[0].id;
+      }
+
+      selector.innerHTML = allPets.map(pet => {
+        const relatedApt = appointments.find(a => a.petId === pet.id);
+        const aptNote = relatedApt ? ` • Randevu: ${relatedApt.time} (${relatedApt.reason})` : '';
+        return `
+          <option value="${pet.id}" ${pet.id === targetPetId ? 'selected' : ''}>
+            ${pet.photoEmoji || '🐾'} ${pet.name} (${pet.species} - ${pet.breed})${aptNote}
+          </option>
+        `;
+      }).join('');
+
+      loadPatientData(targetPetId);
+    }
+
+    function onPatientChange(petId) {
+      selectedAppointmentId = null; // Manuel değiştirildiğinde randevu bağını sıfırla
+      loadPatientData(petId);
+    }
+
+    // Hasta Bilgilerini Ekrana Yükle
+    function loadPatientData(petId) {
+      currentExamPet = VP.pets ? VP.pets.get(petId) : null;
+      if (!currentExamPet) return;
+
+      document.getElementById('patientName').textContent = currentExamPet.name;
+      document.getElementById('patientBreed').textContent = `${currentExamPet.breed} • ${currentExamPet.color || '-'} • ${currentExamPet.gender || '-'}`;
+      document.getElementById('patientAvatar').textContent = currentExamPet.photoEmoji || '🐾';
+      document.getElementById('patientSpeciesBadge').textContent = currentExamPet.species || 'Evcil';
+      document.getElementById('patientPassportNo').textContent = currentExamPet.passportNo;
+      document.getElementById('patientMicrochipNo').textContent = currentExamPet.microchipNo;
+
+      document.getElementById('patientOwnerName').textContent = currentExamPet.ownerName || 'Ahmet Yılmaz';
+      document.getElementById('patientOwnerPhone').textContent = currentExamPet.ownerPhone || '0532 111 2233';
+
+      // Randevu sebebi
+      const allApts = VP.appointments ? VP.appointments.all() : [];
+      let activeApt = null;
+      if (selectedAppointmentId) {
+        activeApt = allApts.find(a => a.id === selectedAppointmentId);
+      }
+      if (!activeApt) {
+        const petApts = VP.appointments ? VP.appointments.forPet(petId) : [];
+        activeApt = petApts.find(a => a.status === 'confirmed');
+      }
+
+      if (activeApt) {
+        selectedAppointmentId = activeApt.id;
+        document.getElementById('patientAptReason').textContent = `Randevu: ${activeApt.time} - ${activeApt.reason} (${activeApt.clinicName || ''})`;
+      } else {
+        document.getElementById('patientAptReason').textContent = 'Randevusuz Doğrudan Muayene';
+      }
+
+      // Alerji metni
+      const defaultAllergy = currentExamPet.species === 'Kedi'
+        ? '⚠️ Tavuk proteini ve laktoz intoleransı mevcuttur! Dikkatli mama verilmelidir.'
+        : '⚠️ Arı sokması duyarlılığı ve anestezi hassasiyeti bildirilmiştir.';
+      document.getElementById('patientAllergiesText').textContent = currentExamPet.allergies ? `⚠️ ${currentExamPet.allergies}` : defaultAllergy;
+
+      // Kilo alanını doldur
+      const weights = VP.weights ? VP.weights.forPet(petId) : [];
+      const latestWeight = weights.length > 0 ? weights[weights.length - 1].weight : (currentExamPet.weight || 4.2);
+      document.getElementById('examWeight').value = latestWeight;
+
+      // Pasaport linkini güncelle
+      document.getElementById('btnViewFullPassport').href = `/passport?petId=${currentExamPet.id}`;
+
+      // Aşıları listele
+      renderPendingVaccines(currentExamPet.id);
+    }
+
+    // ===================================================================
+    // DİNAMİK REÇETE SATIRI EKLE / ÇIKAR
+    // ===================================================================
+    function addPrescriptionRow(name = '', dose = '', route = 'Ağızdan (Oral)', freq = 'Günde 2 kez', dur = '5 gün') {
+      const container = document.getElementById('prescriptionRowsContainer');
+      const rowId = `row_${Math.random().toString(36).substr(2, 9)}`;
+
+      const row = document.createElement('div');
+      row.id = rowId;
+      row.className = "p-3 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row gap-2 items-start sm:items-center";
+
+      row.innerHTML = `
+        <div class="flex-1 w-full sm:w-auto">
+          <input 
+            type="text" 
+            placeholder="İlaç Adı (Örn: Amoksisilin 250mg)" 
+            value="${name}"
+            class="med-name w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-bold outline-none"
+            required
+          />
+        </div>
+        <div class="w-full sm:w-28">
+          <input 
+            type="text" 
+            placeholder="Doz (1 tablet)" 
+            value="${dose}"
+            class="med-dose w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs outline-none"
+            required
+          />
+        </div>
+        <div class="w-full sm:w-32">
+          <select class="med-route w-full px-2 py-1.5 rounded-lg border border-slate-200 text-xs outline-none bg-white">
+            <option value="Ağızdan (Oral)" ${route.includes('Oral') ? 'selected' : ''}>Ağızdan (Oral)</option>
+            <option value="Kulağa Damla" ${route.includes('Kulak') ? 'selected' : ''}>Kulağa Damla</option>
+            <option value="Göze Damla" ${route.includes('Göz') ? 'selected' : ''}>Göze Damla</option>
+            <option value="Enjeksiyon IM/SC" ${route.includes('IM') ? 'selected' : ''}>Enjeksiyon IM/SC</option>
+            <option value="Deriye Haricen" ${route.includes('Deri') ? 'selected' : ''}>Deriye Haricen</option>
+          </select>
+        </div>
+        <div class="w-full sm:w-28">
+          <input 
+            type="text" 
+            placeholder="Sıklık (Günde 2)" 
+            value="${freq}"
+            class="med-freq w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs outline-none"
+          />
+        </div>
+        <div class="w-full sm:w-24">
+          <input 
+            type="text" 
+            placeholder="Süre (7 gün)" 
+            value="${dur}"
+            class="med-dur w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs outline-none"
+          />
+        </div>
+        <button 
+          type="button" 
+          onclick="removePrescriptionRow('${rowId}')" 
+          class="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+          title="Satırı Kaldır"
+        >
+          <i class="fa-solid fa-trash-can"></i>
+        </button>
+      `;
+
+      container.appendChild(row);
+    }
+
+    function removePrescriptionRow(rowId) {
+      const el = document.getElementById(rowId);
+      if (el) el.remove();
+    }
+
+    // ===================================================================
+    // MUAYENE KAYDETME
+    // ===================================================================
+    function handleSaveExam(e) {
+      e.preventDefault();
+      if (!currentExamPet) return;
+
+      const weight = document.getElementById('examWeight').value;
+      const vetName = document.getElementById('examVetName').value.trim();
+      const complaint = document.getElementById('examComplaint').value.trim();
+      const diagnosis = document.getElementById('examDiagnosis').value.trim();
+      const treatment = document.getElementById('examTreatment').value.trim();
+      const prescriptionNotes = document.getElementById('prescriptionNotes').value.trim();
+
+      // İlaç listesini topla
+      const medicines = [];
+      document.querySelectorAll('#prescriptionRowsContainer > div').forEach(row => {
+        const name = row.querySelector('.med-name')?.value.trim();
+        const dose = row.querySelector('.med-dose')?.value.trim();
+        const route = row.querySelector('.med-route')?.value;
+        const frequency = row.querySelector('.med-freq')?.value.trim();
+        const duration = row.querySelector('.med-dur')?.value.trim();
+
+        if (name && dose) {
+          medicines.push({ name, dose, route, frequency, duration });
+        }
+      });
+
+      const examData = {
+        petId: currentExamPet.id,
+        vetName,
+        complaint,
+        diagnosis,
+        treatment,
+        weight: parseFloat(weight) || currentExamPet.weight,
+        prescriptionNotes
+      };
+
+      // app.js completeExam fonksiyonunu çalıştır
+      const result = VP.completeExam(examData, medicines);
+
+      // İlgili randevuyu tamamla
+      if (selectedAppointmentId && VP.appointments) {
+        VP.appointments.update(selectedAppointmentId, { status: 'completed' });
+      }
+
+      if (VP.toast) {
+        VP.toast.show(`✅ ${currentExamPet.name} için muayene ve reçete kaydedildi!`, 'success');
+      }
+
+      setTimeout(() => {
+        window.location.href = `/passport?petId=${currentExamPet.id}`;
+      }, 1000);
+    }
+
+    // ===================================================================
+    // ETKİLEŞİMLİ AŞI UYGULAMA ALANI
+    // ===================================================================
+    function renderPendingVaccines(petId) {
+      const container = document.getElementById('pendingVaccinesContainer');
+      const petVaccines = VP.vaccines ? VP.vaccines.forPet(petId) : [];
+
+      // Henüz yapılmamış (upcoming veya overdue) aşılar
+      const pending = petVaccines.filter(v => v.status !== 'done');
+
+      if (pending.length === 0) {
+        container.innerHTML = `
+          <div class="py-6 text-center text-xs text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+            <i class="fa-solid fa-circle-check text-2xl text-emerald-500 mb-2 block"></i>
+            Bu hastanın bekleyen aşısı bulunmuyor. Tüm aşılar güncel!
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = pending.map(v => {
+        const isOverdue = v.status === 'overdue';
+        const batchInputId = `batch_${v.id}`;
+
+        return `
+          <div class="p-4 rounded-2xl border ${isOverdue ? 'border-red-200 bg-red-50/40' : 'border-slate-200 bg-slate-50/60'} space-y-3">
+            
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="text-xs font-bold text-slate-900">${v.name}</h4>
+                <div class="text-[11px] text-slate-500 mt-0.5">
+                  Planlanan: <span class="font-mono font-semibold">${VP.fmtDate(v.scheduledDate)}</span>
+                </div>
+              </div>
+
+              ${isOverdue ? `
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700 border border-red-200">
+                  <i class="fa-solid fa-triangle-exclamation mr-1"></i> Gecikmiş
+                </span>
+              ` : `
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200">
+                  <i class="fa-regular fa-clock mr-1"></i> Yaklaşan
+                </span>
+              `}
+            </div>
+
+            <!-- Seri No Girişi ve Uygulama Butonu -->
+            <div class="flex items-center gap-2 pt-1">
+              <input 
+                type="text" 
+                id="${batchInputId}" 
+                placeholder="Aşı Parti/Seri No (Örn: B2026-X)" 
+                value="B2026-${Math.floor(1000 + Math.random()*9000)}"
+                class="flex-1 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-mono outline-none bg-white"
+              />
+              <button 
+                type="button" 
+                onclick="applyVaccine('${v.id}', '${batchInputId}')"
+                class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all whitespace-nowrap"
+              >
+                <i class="fa-solid fa-syringe"></i> Aşıyı Tamamla
+              </button>
+            </div>
+
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Aşıyı tamamla ve otomatik sonraki rapeli hesaplat
+    function applyVaccine(vaccineId, batchInputId) {
+      const batchNo = document.getElementById(batchInputId)?.value.trim() || 'SERİ-2026';
+      const vetName = document.getElementById('examVetName')?.value.trim() || 'Dr. Selin Demir';
+
+      const data = {
+        vetName,
+        batchNo,
+        notes: 'Klinikte başarıyla uygulandı.',
+        administered: VP.today()
+      };
+
+      // app.js completeVaccine fonksiyonunu çalıştırır
+      // (aşıyı tamamlar + otomatik olarak 1 yıl sonraki rapeli ekler)
+      const completed = VP.completeVaccine(vaccineId, data, 365);
+
+      if (completed) {
+        // Listeyi tazele
+        renderPendingVaccines(currentExamPet.id);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Rol butonlarını güncelle
+      const activeRole = VP.role ? VP.role.get() : 'OWNER';
+      const ownerBtn = document.getElementById('navRoleOwnerBtn');
+      const vetBtn = document.getElementById('navRoleVetBtn');
+
+      if (activeRole === 'VET') {
+        vetBtn.className = "px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 bg-blue-600 text-white shadow-sm";
+        ownerBtn.className = "px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 text-slate-500 hover:text-slate-800";
+      } else {
+        ownerBtn.className = "px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 bg-teal-600 text-white shadow-sm";
+        vetBtn.className = "px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 text-slate-500 hover:text-slate-800";
+      }
+
+      initPatientSelector();
+
+      // Başlangıç için 1 örnek reçete satırı ekle
+      addPrescriptionRow('Surolan Kulak Damlası', '5 damla', 'Kulağa Damla', 'Günde 2 kez', '7 gün');
+    });
+  </script>
+</body>
+</html>

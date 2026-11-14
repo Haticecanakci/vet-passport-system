@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acil Durum & Kayıp Hayvan Kartı | VetPassport</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              500: '#14b8a6',
+              600: '#0d9488',
+              700: '#0f766e',
+              800: '#115e59',
+              900: '#134e4a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-gradient-to-b from-red-50 via-slate-50 to-amber-50/40 text-slate-800 flex flex-col min-h-screen font-sans antialiased">
+
+  <!-- ================= TOP HEADER (SADECE GERİ DÖN LİNKİ - ROL BARI YOKTUR) ================= -->
+  <header class="w-full max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+    <a href="/" class="inline-flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-slate-900 bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm transition-all">
+      <i class="fa-solid fa-arrow-left"></i>
+      <span>Ana Sayfaya Dön</span>
+    </a>
+
+    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-100 border border-red-200 text-red-700 text-xs font-bold uppercase tracking-wider">
+      <span class="w-2.5 h-2.5 rounded-full bg-red-600 animate-ping"></span>
+      <span>Acil Sağlık & Çip Kartı</span>
+    </div>
+  </header>
+
+  <!-- ================= MAIN CONTAINER ================= -->
+  <main class="flex-1 max-w-xl mx-auto px-4 py-3 w-full space-y-5">
+
+    <!-- Acil Arama Çubuğu (Başka çip denemek için) -->
+    <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
+      <form onsubmit="handleQuerySearch(event)" class="flex gap-2">
+        <div class="relative flex-1">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+          <input 
+            type="text" 
+            id="emergencyChipSearchInput" 
+            placeholder="Başka bir mikroçip veya pasaport no giriniz..." 
+            class="w-full pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 text-xs outline-none font-mono focus:border-red-500"
+          />
+        </div>
+        <button type="submit" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs">
+          Sorgula
+        </button>
+      </form>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- ANA ACİL DURUM KARTI (SALT OKUNUR, GİZLİLİK KORUMALI)               -->
+    <!-- =================================================================== -->
+    <div id="emergencyCardContainer" class="bg-white rounded-3xl border-2 border-red-300 shadow-xl overflow-hidden">
+      
+      <!-- Kırmızı Acil Durum Başlığı -->
+      <div class="bg-gradient-to-r from-red-600 via-rose-600 to-orange-600 p-5 text-white text-center space-y-1">
+        <div class="w-12 h-12 rounded-2xl bg-white/20 text-white text-2xl flex items-center justify-center mx-auto shadow-inner">
+          <i class="fa-solid fa-paw"></i>
+        </div>
+        <h1 class="text-xl font-black tracking-tight">KAYIP VEYA YARALI DOSTUMUZ!</h1>
+        <p class="text-xs text-red-100 font-medium">
+          Bu hayvanı bulduysanız lütfen aşağıdaki iletişim butonunu kullanarak hemen sahibine ulaşınız.
+        </p>
+      </div>
+
+      <!-- Hayvan Tanımlayıcı Bilgileri -->
+      <div class="p-6 space-y-6">
+        
+        <!-- Hayvan Avatar & Temel Başlık -->
+        <div class="flex items-center gap-4 pb-5 border-b border-slate-100">
+          <div id="emgPetAvatar" class="w-20 h-20 rounded-3xl bg-amber-100 border-2 border-amber-300 text-5xl flex items-center justify-center shadow-md shrink-0">
+            🐱
+          </div>
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <h2 id="emgPetName" class="text-2xl font-black text-slate-900">Pamuq</h2>
+              <span id="emgPetGender" class="px-2 py-0.5 rounded text-[10px] font-bold bg-pink-100 text-pink-700">Dişi</span>
+            </div>
+            <p id="emgPetBreed" class="text-xs text-slate-600 font-semibold">Van Kedisi • Beyaz</p>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              <span id="emgPassportBadge" class="text-[11px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
+                VPP-2024-PET001
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mikroçip Numarası Büyük Vurgu -->
+        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-center space-y-1">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">T.C. KAYITLI MİKROÇİP NUMARASI</span>
+          <div id="emgMicrochipNo" class="text-xl sm:text-2xl font-mono font-black text-slate-800 tracking-wider">
+            MC123456789
+          </div>
+          <span class="text-[10px] text-emerald-700 font-bold flex items-center justify-center gap-1">
+            <i class="fa-solid fa-shield-check"></i> Sistemde Doğrulanmış ve Kayıtlı Çip
+          </span>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- KRİTİK UYARI KUTUSU: BİLİNEN ALERJİLER & KRONİK DURUMLAR            -->
+        <!-- =================================================================== -->
+        <div class="p-4 rounded-2xl bg-amber-50 border-2 border-amber-400 space-y-2">
+          <div class="flex items-center gap-2 text-amber-900 font-bold text-xs uppercase tracking-wide">
+            <i class="fa-solid fa-triangle-exclamation text-amber-600 text-base animate-bounce"></i>
+            <span>DİKKAT: Alerji & Özel Sağlık Durumları</span>
+          </div>
+          
+          <div id="emgAllergiesBox" class="text-xs text-amber-950 font-medium leading-relaxed bg-white/80 p-3 rounded-xl border border-amber-200">
+            ⚠️ Tavuk proteini ve laktoz içeren gıdalar kesinlikle verilmemelidir! Sürekli kullandığı ilaçları olabilir. Lütfen veteriner kontrolü olmadan gıda veya ilaç vermeyiniz.
+          </div>
+          <p class="text-[10px] text-amber-700 italic">
+            * Gizlilik ve kişisel verilerin korunması gereği detaylı klinik muayene ve reçete geçmişi üçüncü şahıslara gizlidir.
+          </p>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- EN BELİRGİN BUTON: SAHİBİNİ HEMEN ARA (TEL:)                        -->
+        <!-- =================================================================== -->
+        <div class="space-y-3 pt-2">
+          
+          <a 
+            id="btnCallOwner" 
+            href="tel:05321112233" 
+            class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold text-base shadow-xl shadow-emerald-600/30 transition-all flex items-center justify-center gap-3 transform active:scale-95"
+          >
+            <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-lg animate-pulse">
+              <i class="fa-solid fa-phone"></i>
+            </div>
+            <div class="text-left">
+              <span class="block text-[11px] text-emerald-100 uppercase tracking-widest font-semibold">SAHİBİNİ TEK TIKLA HEMEN ARA</span>
+              <span id="emgOwnerNameAndPhone" class="text-base font-black">Ahmet Yılmaz • 0532 111 2233</span>
+            </div>
+          </a>
+
+          <!-- Konum Bildir Simülasyon Butonu -->
+          <button 
+            type="button" 
+            onclick="simulateSendLocation()" 
+            class="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors flex items-center justify-center gap-2"
+          >
+            <i class="fa-solid fa-location-crosshairs text-teal-600"></i>
+            <span>Bulunduğunuz Konumu SMS ile Gönder (Simülasyon)</span>
+          </button>
+
+        </div>
+
+        <!-- İlk Yardım Tavsiyeleri -->
+        <div class="text-xs text-slate-500 space-y-1.5 pt-4 border-t border-slate-100">
+          <div class="font-bold text-slate-700">Bulunan Hayvan İçin İlk Yardım Adımları:</div>
+          <ul class="list-disc list-inside space-y-1 text-[11px]">
+            <li>Hayvanı trafikten uzak, sakin ve korunaklı bir alana alınız.</li>
+            <li>Tepki vermiyorsa veya yaralıysa en yakın nöbetçi kliniğe naklediniz.</li>
+            <li>Sahibine ulaşana kadar temiz su haricinde yabancı gıda vermeyiniz.</li>
+          </ul>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- EN YAKIN NÖBETÇİ VETERİNER KLİNİKLERİ REHBERİ                       -->
+    <!-- =================================================================== -->
+    <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm space-y-3">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+        <div class="flex items-center gap-2 text-xs font-bold text-slate-900">
+          <i class="fa-solid fa-hospital text-red-500"></i>
+          <span>Acil Yardım: En Yakın Nöbetçi Klinikler</span>
+        </div>
+        <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+          7/24 Açık
+        </span>
+      </div>
+
+      <div id="emergencyDutyClinicsList" class="space-y-2">
+        <!-- Dynamically filled with on-duty clinics -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="mt-auto py-5 text-center text-xs text-slate-400">
+    <p>VetPassport Acil Çip & Pasaport Sorgu Ekranı • T.C. Hayvan Koruma Kanunu Uyumlu</p>
+  </footer>
+
+  <!-- Central LocalStorage Script -->
+  <script src="/js/app.js"></script>
+
+  <!-- Emergency Card Logic -->
+  <script>
+    let currentFoundPet = null;
+
+    // URL'den chip veya id parametresini çek
+    function getQueryParam() {
+      const p = new URLSearchParams(window.location.search);
+      return p.get('chip') || p.get('id') || p.get('petId') || '';
+    }
+
+    // Hayvanı bul ve render et
+    function loadEmergencyPet() {
+      const q = getQueryParam().trim().toLowerCase();
+      const allPets = VP.pets ? VP.pets.all() : [];
+
+      let found = null;
+
+      if (q) {
+        found = allPets.find(p => 
+          (p.microchipNo && p.microchipNo.toLowerCase() === q) ||
+          (p.passportNo && p.passportNo.toLowerCase() === q) ||
+          (p.id && p.id.toLowerCase() === q) ||
+          (p.name && p.name.toLowerCase() === q)
+        );
+      }
+
+      // Bulunamazsa varsayılan ilk hayvanı göster
+      if (!found && allPets.length > 0) {
+        found = allPets[0];
+      }
+
+      if (!found) {
+        document.getElementById('emergencyCardContainer').innerHTML = `
+          <div class="p-8 text-center text-slate-500 space-y-3">
+            <i class="fa-solid fa-circle-question text-4xl text-slate-300"></i>
+            <h3 class="text-base font-bold text-slate-800">Hayvan Kaydı Bulunamadı</h3>
+            <p class="text-xs">Lütfen mikroçip numarasını kontrol edip tekrar sorgulayınız.</p>
+          </div>
+        `;
+        return;
+      }
+
+      currentFoundPet = found;
+      renderPetDetails(found);
+    }
+
+    function renderPetDetails(pet) {
+      document.getElementById('emgPetName').textContent = pet.name;
+      document.getElementById('emgPetBreed').textContent = `${pet.species} • ${pet.breed || 'Melez'} • ${pet.color || '-'}`;
+      document.getElementById('emgPetAvatar').textContent = pet.photoEmoji || '🐾';
+      document.getElementById('emgPetGender').textContent = pet.gender || 'Bilinmiyor';
+      document.getElementById('emgPassportBadge').textContent = pet.passportNo || 'VPP-2024-XXXX';
+      document.getElementById('emgMicrochipNo').textContent = pet.microchipNo || 'Kayıtsız';
+
+      // Alerji metni
+      const defaultAllergy = pet.species === 'Kedi'
+        ? '⚠️ Tavuk proteini ve laktoz intoleransı! Kesinlikle süt veya tavuklu mama vermeyiniz.'
+        : '⚠️ Arı sokması duyarlılığı ve anestezi hassasiyeti mevcuttur.';
+
+      const allergyText = pet.allergies ? `⚠️ ${pet.allergies}` : defaultAllergy;
+      document.getElementById('emgAllergiesBox').textContent = allergyText;
+
+      // Sahibini Ara butonu
+      const ownerPhone = pet.ownerPhone || '0532 111 2233';
+      const ownerName = pet.ownerName || 'Ahmet Yılmaz';
+
+      const callBtn = document.getElementById('btnCallOwner');
+      callBtn.href = `tel:${ownerPhone.replace(/\s+/g, '')}`;
+      document.getElementById('emgOwnerNameAndPhone').textContent = `${ownerName} • ${ownerPhone}`;
+    }
+
+    // Arama formu
+    function handleQuerySearch(e) {
+      e.preventDefault();
+      const val = document.getElementById('emergencyChipSearchInput').value.trim();
+      if (!val) {
+        VP.toast?.show('Lütfen bir çip veya pasaport no giriniz.', 'warning');
+        return;
+      }
+      window.location.search = `?chip=${encodeURIComponent(val)}`;
+    }
+
+    // Konum Bildir Simülasyonu
+    function simulateSendLocation() {
+      if (!currentFoundPet) return;
+      if (VP.toast) {
+        VP.toast.show(`📍 Konumunuz (${currentFoundPet.ownerName} kişisine) SMS ile iletildi!`, 'success');
+      } else {
+        alert('Konumunuz evcil hayvanın sahibine SMS ile iletildi!');
+      }
+    }
+
+    // Nöbetçi klinikleri listele
+    function renderEmergencyClinics() {
+      const container = document.getElementById('emergencyDutyClinicsList');
+      const onDutyList = VP.clinics ? VP.clinics.onDuty() : [];
+
+      if (onDutyList.length === 0) {
+        container.innerHTML = '<div class="text-xs text-slate-400 py-2">Şu an nöbetçi klinik verisi bulunamadı.</div>';
+        return;
+      }
+
+      container.innerHTML = onDutyList.map(c => `
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs">
+          <div>
+            <div class="font-bold text-slate-800">${c.name}</div>
+            <div class="text-[10px] text-slate-500">${c.address}</div>
+          </div>
+          <a href="tel:${c.phone}" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] shrink-0 flex items-center gap-1">
+            <i class="fa-solid fa-phone"></i> Ara
+          </a>
+        </div>
+      `).join('');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadEmergencyPet();
+      renderEmergencyClinics();
+    });
+  </script>
+</body>
+</html>

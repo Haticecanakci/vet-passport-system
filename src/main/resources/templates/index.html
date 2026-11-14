@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VetPassport | Evcil Hayvan Sağlık Pasaportu & Veteriner Takip Sistemi</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              500: '#14b8a6',
+              600: '#0d9488',
+              700: '#0f766e',
+              800: '#115e59',
+              900: '#134e4a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen font-sans antialiased">
+
+  <!-- ================= NAVBAR ================= -->
+  <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-emerald-100 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 py-3.5 flex items-center justify-between">
+      
+      <!-- Logo -->
+      <a href="/" class="flex items-center gap-3 group">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-teal-600 to-emerald-500 flex items-center justify-center text-white text-xl shadow-md shadow-teal-500/20 group-hover:scale-105 transition-transform">
+          <i class="fa-solid fa-paw"></i>
+        </div>
+        <div>
+          <span class="text-xl font-bold bg-gradient-to-r from-teal-700 to-emerald-600 bg-clip-text text-transparent">VetPassport</span>
+          <span class="block text-[11px] font-medium text-teal-600 tracking-wider uppercase">Dijital Sağlık & Takip</span>
+        </div>
+      </a>
+
+      <!-- Navigation links -->
+      <nav class="hidden md:flex items-center gap-7 text-sm font-medium text-slate-600">
+        <a href="#hero" class="hover:text-teal-600 transition-colors flex items-center gap-1.5">
+          <i class="fa-solid fa-house text-teal-500 text-xs"></i> Ana Sayfa
+        </a>
+        <a href="#chip-search" class="hover:text-amber-600 transition-colors flex items-center gap-1.5 font-semibold text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
+          <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> Acil Çip Sorgu
+        </a>
+        <a href="#clinics" class="hover:text-teal-600 transition-colors flex items-center gap-1.5">
+          <i class="fa-solid fa-hospital text-teal-500 text-xs"></i> Nöbetçi Klinikler
+        </a>
+        <a href="/dashboard" class="hover:text-teal-600 transition-colors flex items-center gap-1.5">
+          <i class="fa-solid fa-chart-pie text-teal-500 text-xs"></i> Panel
+        </a>
+      </nav>
+
+      <!-- Action Button -->
+      <div class="flex items-center gap-3">
+        <a href="/login" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-semibold text-sm shadow-md shadow-teal-600/20 hover:shadow-lg hover:shadow-teal-600/30 transition-all transform hover:-translate-y-0.5">
+          <i class="fa-solid fa-user-lock"></i>
+          <span>Giriş Yap / Kayıt Ol</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= HERO SECTION ================= -->
+  <section id="hero" class="relative overflow-hidden pt-12 pb-20 lg:pt-16 lg:pb-28 bg-gradient-to-b from-teal-50/70 via-white to-slate-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid lg:grid-cols-12 gap-12 items-center">
+        
+        <!-- Left Content -->
+        <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-100/80 border border-teal-200 text-teal-800 text-xs font-semibold uppercase tracking-wider">
+            <span class="w-2 h-2 rounded-full bg-teal-600 animate-pulse"></span>
+            Yeni Nesil Evcil Hayvan Sağlık Ekosistemi
+          </div>
+          
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-tight">
+            Dostunuzun Sağlığı, <br class="hidden sm:block"/>
+            <span class="bg-gradient-to-r from-teal-600 via-emerald-600 to-teal-800 bg-clip-text text-transparent">
+              Cebinizde ve Güvende
+            </span>
+          </h1>
+
+          <p class="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto lg:mx-0 font-normal leading-relaxed">
+            Kaybolma riskine karşı anında çip sorgulama, otomatik aşı hatırlatıcıları, veteriner onaylı dijital reçeteler ve 7/24 nöbetçi klinik rehberi tek bir dijital pasaportta birleşti.
+          </p>
+
+          <!-- Buttons -->
+          <div class="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-4">
+            <a href="/login" class="px-7 py-3.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-base shadow-lg shadow-teal-600/25 transition-all flex items-center gap-2">
+              <i class="fa-solid fa-id-card"></i>
+              <span>Hemen Başlayın</span>
+            </a>
+            <a href="#chip-search" class="px-7 py-3.5 rounded-xl bg-white hover:bg-amber-50 text-amber-700 font-semibold text-base border-2 border-amber-300 shadow-sm transition-all flex items-center gap-2">
+              <i class="fa-solid fa-magnifying-glass-location text-amber-600"></i>
+              <span>Kayıp Çip Sorgula</span>
+            </a>
+          </div>
+
+          <!-- Feature Bullets -->
+          <div class="pt-6 grid grid-cols-3 gap-4 border-t border-slate-200/80 text-left">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg bg-teal-100 flex items-center justify-center text-teal-700">
+                <i class="fa-solid fa-shield-cat"></i>
+              </div>
+              <div>
+                <h4 class="text-xs font-bold text-slate-800">Dijital Pasaport</h4>
+                <p class="text-[11px] text-slate-500">QR & Çip Entegre</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-700">
+                <i class="fa-solid fa-syringe"></i>
+              </div>
+              <div>
+                <h4 class="text-xs font-bold text-slate-800">Aşı Takvimi</h4>
+                <p class="text-[11px] text-slate-500">Gecikme & Rapel Takibi</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg bg-red-100 flex items-center justify-center text-red-600">
+                <i class="fa-solid fa-truck-medical"></i>
+              </div>
+              <div>
+                <h4 class="text-xs font-bold text-slate-800">7/24 Nöbetçi</h4>
+                <p class="text-[11px] text-slate-500">Acil Klinik Haritası</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Visual Card -->
+        <div class="lg:col-span-5 flex justify-center">
+          <div class="relative w-full max-w-md">
+            <!-- Background glow decoration -->
+            <div class="absolute -inset-2 bg-gradient-to-r from-teal-400 to-emerald-400 rounded-3xl blur-xl opacity-30"></div>
+            
+            <!-- Passport Card Preview -->
+            <div class="relative bg-gradient-to-br from-teal-800 via-teal-900 to-slate-900 text-white rounded-3xl p-6 shadow-2xl border border-teal-700/50">
+              <div class="flex items-center justify-between pb-4 border-b border-teal-700/50">
+                <div class="flex items-center gap-2">
+                  <span class="text-2xl">🇹🇷</span>
+                  <span class="text-xs font-bold tracking-widest uppercase text-teal-200">T.C. Evcil Hayvan Pasaportu</span>
+                </div>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">AKTİF</span>
+              </div>
+
+              <div class="mt-5 flex gap-4 items-center">
+                <div class="w-20 h-20 rounded-2xl bg-gradient-to-tr from-amber-400 to-amber-200 text-4xl flex items-center justify-center shadow-inner border-2 border-white/20">
+                  🐱
+                </div>
+                <div class="space-y-1">
+                  <span class="text-[11px] font-mono tracking-widest text-teal-300">VPP-2024-PET001</span>
+                  <h3 class="text-2xl font-bold text-white">Pamuq</h3>
+                  <p class="text-xs text-teal-200">Van Kedisi • Beyaz • Dişi</p>
+                </div>
+              </div>
+
+              <div class="mt-5 grid grid-cols-2 gap-3 text-xs bg-white/5 p-3.5 rounded-xl border border-white/10">
+                <div>
+                  <span class="text-[10px] text-teal-300 block">Mikroçip No</span>
+                  <span class="font-mono font-bold text-slate-100">MC123456789</span>
+                </div>
+                <div>
+                  <span class="text-[10px] text-teal-300 block">Kayıtlı Sahip</span>
+                  <span class="font-semibold text-slate-100">Ahmet Yılmaz</span>
+                </div>
+                <div>
+                  <span class="text-[10px] text-teal-300 block">Son Aşı Durumu</span>
+                  <span class="text-emerald-400 font-semibold"><i class="fa-solid fa-check-circle"></i> Kuduz & Karma</span>
+                </div>
+                <div>
+                  <span class="text-[10px] text-teal-300 block">Acil İletişim</span>
+                  <span class="font-mono text-slate-100">0532 111 2233</span>
+                </div>
+              </div>
+
+              <div class="mt-4 pt-3 border-t border-teal-700/50 flex items-center justify-between text-xs text-teal-300">
+                <span class="flex items-center gap-1.5"><i class="fa-solid fa-qrcode text-base"></i> Taranabilir Dijital Kimlik</span>
+                <span class="font-mono text-[11px] text-teal-400">GÜNCEL</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ACİL DURUM ÇİP SORGULAMA (PROMINENT SEARCH BOX) ================= -->
+  <section id="chip-search" class="relative -mt-8 z-20 max-w-5xl mx-auto px-4 sm:px-6 w-full">
+    <div class="bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 p-1 rounded-3xl shadow-2xl">
+      <div class="bg-white rounded-[22px] p-6 sm:p-8">
+        
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+          <div class="flex items-center gap-3.5">
+            <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-2xl shadow-sm">
+              <i class="fa-solid fa-triangle-exclamation animate-bounce"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 class="text-xl sm:text-2xl font-bold text-slate-900">Acil Durum Çip & Pasaport Sorgu</h2>
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-red-100 text-red-700 border border-red-200">GİRİŞSİZ ERİŞİM</span>
+              </div>
+              <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
+                Sokakta kayıp veya yaralı bir hayvan mı buldunuz? Mikroçip veya Pasaport No ile hemen sahibine ve acil sağlık kartına ulaşın.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search Form -->
+        <form id="emergencySearchForm" class="mt-6" onsubmit="handleEmergencySearch(event)">
+          <div class="flex flex-col md:flex-row gap-3">
+            <div class="relative flex-1">
+              <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                <i class="fa-solid fa-magnifying-glass text-lg"></i>
+              </div>
+              <input 
+                type="text" 
+                id="chipInput" 
+                required
+                placeholder="Örn: MC123456789 veya VPP-2024-PET001 yazınız..." 
+                class="w-full pl-12 pr-4 py-4 rounded-xl border-2 border-slate-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 text-slate-800 placeholder-slate-400 font-mono text-base outline-none transition-all shadow-inner"
+              />
+            </div>
+            <button 
+              type="submit" 
+              class="px-8 py-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold text-base shadow-lg shadow-orange-500/25 transition-all flex items-center justify-center gap-2 transform active:scale-95"
+            >
+              <i class="fa-solid fa-heart-pulse"></i>
+              <span>Acil Bilgi Getir</span>
+            </button>
+          </div>
+
+          <!-- Quick Test Demo Chips for Jury/Presentation -->
+          <div class="mt-4 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+            <span class="font-semibold text-slate-700 flex items-center gap-1">
+              <i class="fa-solid fa-bolt text-amber-500"></i> Hızlı Test:
+            </span>
+            <button 
+              type="button" 
+              onclick="fillChip('MC123456789')"
+              class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-amber-100 hover:text-amber-900 border border-slate-200 transition-colors font-mono"
+            >
+              🐱 Pamuq Çip (MC123456789)
+            </button>
+            <button 
+              type="button" 
+              onclick="fillChip('MC987654321')"
+              class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-amber-100 hover:text-amber-900 border border-slate-200 transition-colors font-mono"
+            >
+              🐶 Karabaş Çip (MC987654321)
+            </button>
+            <button 
+              type="button" 
+              onclick="fillChip('VPP-2024-PET001')"
+              class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-teal-100 hover:text-teal-900 border border-slate-200 transition-colors font-mono"
+            >
+              📋 Pasaport (VPP-2024-PET001)
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= NÖBETÇİ VE AÇIK VETERİNER KLİNİKLERİ ================= -->
+  <section id="clinics" class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+    
+    <!-- Section Title & Filters -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-bold uppercase tracking-wider mb-2">
+          <i class="fa-solid fa-bell animate-pulse"></i> Acil Sağlık Hattı
+        </div>
+        <h2 class="text-3xl font-extrabold text-slate-900">Nöbetçi ve Açık Veteriner Klinikleri</h2>
+        <p class="text-sm text-slate-500 mt-1">İliniz ve ilçenizdeki acil nöbetçi ve mesaiye açık veteriner noktaları</p>
+      </div>
+
+      <!-- Filters -->
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- City Filter -->
+        <div class="relative">
+          <select id="filterCity" onchange="renderClinics()" class="appearance-none bg-white border border-slate-200 rounded-xl px-4 py-2.5 pr-8 text-sm font-medium text-slate-700 hover:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20">
+            <option value="ALL">Tüm Şehirler</option>
+            <option value="İstanbul" selected>İstanbul</option>
+            <option value="Ankara">Ankara</option>
+            <option value="İzmir">İzmir</option>
+          </select>
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
+            <i class="fa-solid fa-chevron-down text-xs"></i>
+          </div>
+        </div>
+
+        <!-- District Filter -->
+        <div class="relative">
+          <select id="filterDistrict" onchange="renderClinics()" class="appearance-none bg-white border border-slate-200 rounded-xl px-4 py-2.5 pr-8 text-sm font-medium text-slate-700 hover:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20">
+            <option value="ALL">Tüm İlçeler</option>
+            <option value="Kadıköy">Kadıköy</option>
+            <option value="Bağcılar">Bağcılar</option>
+            <option value="Üsküdar">Üsküdar</option>
+          </select>
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
+            <i class="fa-solid fa-chevron-down text-xs"></i>
+          </div>
+        </div>
+
+        <!-- On-Duty Toggle -->
+        <button 
+          id="toggleDutyBtn"
+          type="button" 
+          onclick="toggleOnlyDuty()"
+          class="px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-sm font-semibold text-slate-700 transition-colors flex items-center gap-2"
+        >
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+          <span>Yalnızca Nöbetçiler</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Clinic Cards Grid -->
+    <div id="clinicsContainer" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- JavaScript ile dinamik app.js verilerinden basılacak -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="noClinicsAlert" class="hidden text-center py-12 bg-white rounded-2xl border border-dashed border-slate-200">
+      <i class="fa-solid fa-hospital-user text-4xl text-slate-300 mb-3"></i>
+      <h3 class="text-base font-semibold text-slate-700">Seçilen kriterlere uygun klinik bulunamadı</h3>
+      <p class="text-xs text-slate-400 mt-1">Filtreleri sıfırlayarak tüm klinikleri görüntüleyebilirsiniz.</p>
+      <button onclick="resetFilters()" class="mt-4 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs font-semibold text-slate-700">
+        Filtreleri Sıfırla
+      </button>
+    </div>
+
+  </section>
+
+  <!-- ================= HOW IT WORKS ================= -->
+  <section class="py-16 bg-white border-t border-slate-200/70">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Sistem Nasıl Çalışır?</h2>
+        <p class="text-sm text-slate-500 mt-2">Dostunuz için 3 adımda güvenli ve eksiksiz sağlık kaydı</p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="p-6 rounded-2xl bg-slate-50 border border-slate-100 text-center space-y-3">
+          <div class="w-14 h-14 rounded-2xl bg-teal-100 text-teal-700 text-2xl flex items-center justify-center mx-auto shadow-sm">
+            <i class="fa-solid fa-address-card"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-800">1. Dijital Pasaportunu Aç</h3>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Hayvanınızın tür, ırk, doğum ve mikroçip bilgilerini girin; anında resmi formatlı pasaport numarası ve aşı takvimi üretilsin.
+          </p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-slate-50 border border-slate-100 text-center space-y-3">
+          <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-700 text-2xl flex items-center justify-center mx-auto shadow-sm">
+            <i class="fa-solid fa-calendar-check"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-800">2. Randevu & Aşı Hatırlatıcı</h3>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Yaklaşan veya geciken aşıları renkli durumlarla takip edin; anlaşmalı hekimlerin dolu saatlerine takılmadan randevu alın.
+          </p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-slate-50 border border-slate-100 text-center space-y-3">
+          <div class="w-14 h-14 rounded-2xl bg-amber-100 text-amber-700 text-2xl flex items-center justify-center mx-auto shadow-sm">
+            <i class="fa-solid fa-qrcode"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-800">3. Acil Durum & Çip Güvencesi</h3>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Kayıp durumunda sokakta bulan kişi şifresiz acil karttan size ulaşsın, nöbetçi veteriner klinikleri haritasından anında yardım alın.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="mt-auto bg-slate-900 text-slate-400 text-xs py-10 border-t border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+      
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-xl bg-teal-600 flex items-center justify-center text-white text-base">
+          <i class="fa-solid fa-paw"></i>
+        </div>
+        <div>
+          <span class="text-sm font-bold text-white">VetPassport Sistemi</span>
+          <p class="text-[11px] text-slate-500">Evcil Hayvan Sağlık Pasaportu & Veteriner Takip Sistemi</p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-center gap-6 text-slate-400">
+        <a href="/" class="hover:text-white transition-colors">Ana Sayfa</a>
+        <a href="/login" class="hover:text-white transition-colors">Giriş / Kayıt</a>
+        <a href="/dashboard" class="hover:text-white transition-colors">Kullanıcı Paneli</a>
+        <a href="#chip-search" class="hover:text-amber-400 transition-colors">Acil Çip Sorgu</a>
+        <a href="/emergency" class="hover:text-red-400 transition-colors">Nöbetçi Rehberi</a>
+      </div>
+
+      <div class="text-slate-500 text-center md:text-right">
+        <span>© 2026 VetPassport. Vize Proje Prototipi.</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Central LocalStorage Script -->
+  <script src="/js/app.js"></script>
+
+  <!-- Page Specific Logic -->
+  <script>
+    let onlyOnDuty = false;
+
+    // Hızlı test butonlarına tıklanınca inputu doldur
+    function fillChip(value) {
+      const input = document.getElementById('chipInput');
+      input.value = value;
+      input.focus();
+    }
+
+    // Acil durum çip arama
+    function handleEmergencySearch(e) {
+      e.preventDefault();
+      const val = document.getElementById('chipInput').value.trim();
+      if (!val) {
+        VP.toast?.show('Lütfen bir mikroçip veya pasaport numarası giriniz.', 'warning');
+        return;
+      }
+      // Doğrudan acil durum sayfasına yönlendir
+      window.location.href = `/emergency?chip=${encodeURIComponent(val)}`;
+    }
+
+    // Nöbetçi filtresi aç/kapat
+    function toggleOnlyDuty() {
+      onlyOnDuty = !onlyOnDuty;
+      const btn = document.getElementById('toggleDutyBtn');
+      if (onlyOnDuty) {
+        btn.classList.add('bg-emerald-50', 'border-emerald-300', 'text-emerald-800');
+        btn.classList.remove('bg-white', 'text-slate-700');
+      } else {
+        btn.classList.remove('bg-emerald-50', 'border-emerald-300', 'text-emerald-800');
+        btn.classList.add('bg-white', 'text-slate-700');
+      }
+      renderClinics();
+    }
+
+    function resetFilters() {
+      document.getElementById('filterCity').value = 'ALL';
+      document.getElementById('filterDistrict').value = 'ALL';
+      onlyOnDuty = false;
+      const btn = document.getElementById('toggleDutyBtn');
+      btn.classList.remove('bg-emerald-50', 'border-emerald-300', 'text-emerald-800');
+      btn.classList.add('bg-white', 'text-slate-700');
+      renderClinics();
+    }
+
+    // Klinik listesini app.js verilerinden render et
+    function renderClinics() {
+      const container = document.getElementById('clinicsContainer');
+      const emptyAlert = document.getElementById('noClinicsAlert');
+      
+      const city = document.getElementById('filterCity').value;
+      const district = document.getElementById('filterDistrict').value;
+
+      let list = VP.clinics ? VP.clinics.all() : [];
+
+      // Filtreleme
+      if (onlyOnDuty) {
+        list = list.filter(c => c.onDuty === true);
+      }
+      if (city !== 'ALL') {
+        list = list.filter(c => c.address && c.address.includes(city));
+      }
+      if (district !== 'ALL') {
+        list = list.filter(c => c.address && c.address.includes(district));
+      }
+
+      if (list.length === 0) {
+        container.innerHTML = '';
+        emptyAlert.classList.remove('hidden');
+        return;
+      }
+
+      emptyAlert.classList.add('hidden');
+
+      container.innerHTML = list.map(c => {
+        const dutyBadge = c.onDuty 
+          ? `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+               <span class="w-2 h-2 rounded-full bg-emerald-600 animate-ping"></span> Nöbetçi (Açık)
+             </span>`
+          : `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">
+               <i class="fa-regular fa-clock text-slate-400"></i> Mesai Saatinde
+             </span>`;
+
+        const vetsList = (c.vets || []).map(v => 
+          `<span class="inline-block text-[11px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded mr-1 mb-1 font-medium">${v}</span>`
+        ).join('');
+
+        return `
+          <div class="bg-white rounded-2xl border ${c.onDuty ? 'border-emerald-200 shadow-md shadow-emerald-500/5' : 'border-slate-200 shadow-sm'} p-6 flex flex-col justify-between hover:shadow-lg transition-all">
+            <div>
+              <div class="flex items-start justify-between gap-3 mb-3">
+                <h3 class="text-lg font-bold text-slate-800 leading-snug">${c.name}</h3>
+                ${dutyBadge}
+              </div>
+
+              <div class="space-y-2.5 text-xs text-slate-600 mt-4">
+                <div class="flex items-start gap-2.5">
+                  <i class="fa-solid fa-location-dot text-teal-600 mt-0.5 text-sm"></i>
+                  <span>${c.address}</span>
+                </div>
+                <div class="flex items-center gap-2.5">
+                  <i class="fa-solid fa-phone text-teal-600 text-sm"></i>
+                  <a href="tel:${c.phone}" class="font-semibold text-teal-700 hover:underline font-mono">${c.phone}</a>
+                </div>
+                <div class="flex items-center gap-2.5">
+                  <i class="fa-regular fa-clock text-teal-600 text-sm"></i>
+                  <span class="font-medium text-slate-700">${c.workingHours}</span>
+                </div>
+              </div>
+
+              <div class="mt-4 pt-3 border-t border-slate-100">
+                <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Hekim Kadrosu:</div>
+                <div class="flex flex-wrap">${vetsList}</div>
+              </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-100 flex items-center gap-3">
+              <a href="tel:${c.phone}" class="flex-1 py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold text-center transition-colors flex items-center justify-center gap-2">
+                <i class="fa-solid fa-phone"></i> Hemen Ara
+              </a>
+              <a href="/appointments" class="flex-1 py-2.5 px-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold text-center shadow-sm transition-colors flex items-center justify-center gap-2">
+                <i class="fa-solid fa-calendar-plus"></i> Randevu Al
+              </a>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderClinics();
+    });
+  </script>
+</body>
+</html>
