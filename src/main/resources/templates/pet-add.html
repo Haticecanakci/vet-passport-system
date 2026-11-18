@@ -212,6 +212,8 @@
               <option value="Köpek">🐶 Köpek (Karma + Bordetella + Kuduz vb.)</option>
               <option value="Tavşan">🐰 Tavşan (VHD + Miyomatozis)</option>
               <option value="Kuş">🦜 Kuş (Newcastle + Poliomyelit)</option>
+              <option value="Hamster / Kemirgen">🐹 Hamster / Kemirgen (Genel Sağlık Kontrolü)</option>
+              <option value="Diğer">🐾 Diğer (Genel Sağlık Kontrolü)</option>
             </select>
           </div>
 
@@ -382,9 +384,11 @@
             <label class="block text-xs font-semibold text-slate-700 mb-1">Sahip Ad Soyad *</label>
             <input 
               type="text" 
-              id="petOwnerName" 
-              required 
-              value="Ahmet Yılmaz" 
+              id="petOwnerName"
+              name="petOwnerName"
+              required
+              autocomplete="off"
+              placeholder="Örn: Ayşe Demir"
               class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
             />
           </div>
@@ -393,13 +397,18 @@
             <label class="block text-xs font-semibold text-slate-700 mb-1">Acil İletişim Telefonu *</label>
             <input 
               type="tel" 
-              id="petOwnerPhone" 
-              required 
-              value="0532 111 2233" 
+              id="petOwnerPhone"
+              name="petOwnerPhone"
+              required
+              autocomplete="off"
+              placeholder="Örn: 0532 111 2233"
               class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
             />
           </div>
         </div>
+        <p id="ownerLockNote" class="hidden text-[11px] text-slate-400">
+          <i class="fa-solid fa-lock"></i> Sahip bilgileri oturumdaki hesabınızdan alınır ve burada değiştirilemez.
+        </p>
       </div>
 
       <!-- Action Buttons -->
@@ -460,7 +469,7 @@
 
         <div class="text-[11px] text-teal-200 pt-2 border-t border-teal-700/60 flex items-center justify-between">
           <span id="modalChipNo">Çip: MC0000000</span>
-          <span>Takvim: 5 Aşı Eklendi</span>
+          <span id="modalScheduleCount">Takvim: 0 Kayıt Eklendi</span>
         </div>
       </div>
 
@@ -496,7 +505,7 @@
   </div>
 
   <!-- Central LocalStorage Script -->
-  <script src="/js/app.js"></script>
+  <script src="/js/app.js?v=3"></script>
 
   <!-- Page Logic -->
   <script>
@@ -508,12 +517,92 @@
       document.getElementById('petMicrochip').value = `MC${randomNum}`;
     }
 
-    // Rol geçişini yönet ve arayüzü güncelle
-    function switchCurrentRole(targetRole) {
-      if (window.VP && VP.role) {
-        VP.role.switchTo(targetRole);
+    // OWNER: sahip alanlarını oturumdaki kullanıcıdan doldur ve kilitle; VET: düzenlenebilir bırak
+    const DEMO_OWNER_FALLBACK = { id: 'OWN001', name: 'Ahmet Yılmaz', phone: '0532 111 2233' };
+    const LOCKED_CLASSES = ['bg-slate-100', 'cursor-not-allowed', 'text-slate-500'];
+
+    // Aktif rolü güvenli şekilde oku (VP yoksa localStorage'a düş)
+    function getActiveRole() {
+      if (window.VP && VP.role) return VP.role.get();
+      try {
+        return (localStorage.getItem('vp_active_role') || 'OWNER').toUpperCase() === 'VET' ? 'VET' : 'OWNER';
+      } catch { return 'OWNER'; }
+    }
+
+    // Oturum kullanıcısı (eski/önbellekteki app.js'te session yoksa demo sahibine düş)
+    function getSessionUser() {
+      return (window.VP && VP.session) ? VP.session.currentUser() : { ...DEMO_OWNER_FALLBACK };
+    }
+
+    // OWNER: sahip alanlarını oturumdaki kullanıcıdan doldur ve kilitle; VET: düzenlenebilir bırak
+    function applyOwnerFieldsByRole() {
+      const isOwner = getActiveRole() === 'OWNER';
+      const user = getSessionUser();
+      const fields = [
+        [document.getElementById('petOwnerName'), user.name],
+        [document.getElementById('petOwnerPhone'), user.phone],
+      ];
+
+      fields.forEach(([input, sessionValue]) => {
+        if (!input) return;
+        if (isOwner) {
+          input.value = sessionValue;
+        } else if (input.readOnly && input.value === sessionValue) {
+          // OWNER'dan VET'e geçerken otomatik doldurulmuş değeri temizle
+          input.value = '';
+        }
+        input.readOnly = isOwner;
+        input.setAttribute('aria-readonly', String(isOwner));
+        LOCKED_CLASSES.forEach(c => input.classList.toggle(c, isOwner));
+      });
+
+      document.getElementById('ownerLockNote').classList.toggle('hidden', !isOwner);
+    }
+
+    // Navbar rol butonlarının görünümünü güncelle
+    function updateRoleButtons() {
+      const activeRole = getActiveRole();
+      const ownerBtn = document.getElementById('navRoleOwnerBtn');
+      const vetBtn = document.getElementById('navRoleVetBtn');
+      const base = "px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5";
+      const idle = `${base} text-slate-500 hover:text-slate-800`;
+
+      if (activeRole === 'VET') {
+        vetBtn.className = `${base} bg-blue-600 text-white shadow-sm`;
+        ownerBtn.className = idle;
+      } else {
+        ownerBtn.className = `${base} bg-teal-600 text-white shadow-sm`;
+        vetBtn.className = idle;
       }
     }
+
+    // Rol geçişi: bu sayfada yönlendirme yapmadan rolü değiştir ve formu güncelle
+    function switchCurrentRole(targetRole) {
+      if (!(window.VP && VP.role)) return;
+      if (VP.role.set) {
+        VP.role.set(targetRole);
+        VP.toast?.show(`Rol değiştirildi: ${targetRole === 'OWNER' ? '🏠 Sahip' : '🩺 Veteriner'}`, 'success');
+      } else {
+        VP.role.switchTo(targetRole);
+        return;
+      }
+      updateRoleButtons();
+      applyOwnerFieldsByRole();
+    }
+
+    // Başka sekmede rol değişirse bu sayfayı da güncelle
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'vp_active_role' || e.key === 'vp_active_user') {
+        updateRoleButtons();
+        applyOwnerFieldsByRole();
+      }
+    });
+
+    // Geri tuşuyla önbellekten (bfcache) dönüldüğünde de rolü yeniden uygula
+    window.addEventListener('pageshow', () => {
+      updateRoleButtons();
+      applyOwnerFieldsByRole();
+    });
 
     // Form submit işleyicisi
     function handlePetSubmit(e) {
@@ -533,8 +622,12 @@
       const sterilized = document.querySelector('input[name="petSterilized"]:checked')?.value || 'Evet';
       const allergies = document.getElementById('petAllergies').value.trim();
 
-      const ownerName = document.getElementById('petOwnerName').value.trim();
-      const ownerPhone = document.getElementById('petOwnerPhone').value.trim();
+      // OWNER rolünde sahip bilgileri DOM yerine her zaman oturumdan alınır
+      const isOwner = getActiveRole() === 'OWNER';
+      const sessionUser = getSessionUser();
+      const ownerId = isOwner ? sessionUser.id : 'OWN001';
+      const ownerName = isOwner ? sessionUser.name : document.getElementById('petOwnerName').value.trim();
+      const ownerPhone = isOwner ? sessionUser.phone : document.getElementById('petOwnerPhone').value.trim();
 
       const petData = {
         name,
@@ -549,7 +642,7 @@
         microchipNo,
         sterilized,
         allergies,
-        ownerId: 'OWN001',
+        ownerId,
         ownerName,
         ownerPhone
       };
@@ -573,6 +666,10 @@
       document.getElementById('modalPetTitle').textContent = `${newPet.name} (${newPet.species} - ${newPet.breed})`;
       document.getElementById('modalChipNo').textContent = `Çip: ${newPet.microchipNo}`;
 
+      // Türe göre gerçekte oluşturulan takvim kaydı sayısı
+      const scheduleCount = VP.vaccines.forPet(newPet.id).length;
+      document.getElementById('modalScheduleCount').textContent = `Takvim: ${scheduleCount} Kayıt Eklendi`;
+
       // QR Kod oluşturucu URL
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(newPet.passportNo)}`;
       document.getElementById('modalQrImg').src = qrUrl;
@@ -592,23 +689,14 @@
     function resetFormForNewPet() {
       document.getElementById('successModal').classList.add('hidden');
       document.getElementById('petAddForm').reset();
+      applyOwnerFieldsByRole();
       generateRandomChip();
     }
 
     // Sayfa açıldığında rol butonlarını güncelle ve başlangıç çip numarası oluştur
     document.addEventListener('DOMContentLoaded', () => {
-      const activeRole = VP.role ? VP.role.get() : 'OWNER';
-      const ownerBtn = document.getElementById('navRoleOwnerBtn');
-      const vetBtn = document.getElementById('navRoleVetBtn');
-
-      if (activeRole === 'VET') {
-        vetBtn.className = "px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 bg-blue-600 text-white shadow-sm";
-        ownerBtn.className = "px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 text-slate-500 hover:text-slate-800";
-      } else {
-        ownerBtn.className = "px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 bg-teal-600 text-white shadow-sm";
-        vetBtn.className = "px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 text-slate-500 hover:text-slate-800";
-      }
-
+      updateRoleButtons();
+      applyOwnerFieldsByRole();
       generateRandomChip();
     });
   </script>

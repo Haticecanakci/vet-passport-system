@@ -369,12 +369,21 @@ const VP = (() => {
      * Aktif rolü döndürür: 'OWNER' | 'VET'
      * Varsayılan: OWNER
      */
-    get: () => ls.getString(KEYS.ROLE, 'OWNER'),
+    get: () => {
+      const r = String(ls.getString(KEYS.ROLE, 'OWNER')).trim().toUpperCase();
+      return r === 'VET' ? 'VET' : 'OWNER';
+    },
+
+    /** Rolü yönlendirme yapmadan kaydet (sayfa içi geçişler için) */
+    set: (newRole) => {
+      if (!['OWNER', 'VET'].includes(newRole)) return false;
+      ls.setString(KEYS.ROLE, newRole);
+      return true;
+    },
 
     /** Rolü değiştir ve sayfayı dashboard'a yönlendir */
     switchTo: (newRole) => {
-      if (!['OWNER', 'VET'].includes(newRole)) return;
-      ls.setString(KEYS.ROLE, newRole);
+      if (!role.set(newRole)) return;
       toast.show(`Rol değiştirildi: ${newRole === 'OWNER' ? '🏠 Sahip' : '🩺 Veteriner'}`, 'success');
       /* 500ms sonra dashboard'a git */
       setTimeout(() => { window.location.href = '/dashboard'; }, 500);
@@ -382,6 +391,20 @@ const VP = (() => {
 
     isVet:   () => role.get() === 'VET',
     isOwner: () => role.get() === 'OWNER',
+  };
+
+  /* ── 4b. Oturum Kullanıcısı ──────────────────────────── */
+
+  /** Gerçek giriş yokken kullanılan demo hayvan sahibi */
+  const DEMO_OWNER = { id: 'OWN001', name: 'Ahmet Yılmaz', phone: '0532 111 2233' };
+
+  const session = {
+    /** Oturumdaki kullanıcıyı döndürür; kayıt yoksa demo sahibi */
+    currentUser: () => {
+      const u = ls.getObj(KEYS.ACTIVE_USER);
+      return (u && u.name) ? { ...DEMO_OWNER, ...u } : { ...DEMO_OWNER };
+    },
+    setUser: (user) => ls.set(KEYS.ACTIVE_USER, user),
   };
 
   /* ── 5. Pasaport No & Aşı Takvimi Üreteci ────────────── */
@@ -412,6 +435,12 @@ const VP = (() => {
     'Tavşan': [
       { name: 'VHD Aşısı',                  offsetDays: 30  },
       { name: 'Miyomatozis Aşısı',          offsetDays: 60  },
+    ],
+    'Hamster / Kemirgen': [
+      { name: 'Genel Sağlık Kontrolü',      offsetDays: 14  },
+    ],
+    'Diğer': [
+      { name: 'Genel Sağlık Kontrolü',      offsetDays: 14  },
     ],
   };
 
@@ -692,6 +721,7 @@ const VP = (() => {
     clinics,
     /* İş mantığı */
     role,
+    session,
     registerPet,
     bookAppointment,
     getBookedSlots,
@@ -709,6 +739,9 @@ const VP = (() => {
     KEYS,
   };
 })();
+
+/* `const` global nesneyi window'a bağlamaz; sayfalardaki `window.VP` kontrolleri için açıkça ata */
+window.VP = VP;
 
 /* Global yardımcı fonksiyonlar (Tüm sayfalarda ortak kullanım) */
 window.resetAllDemoData = () => {
