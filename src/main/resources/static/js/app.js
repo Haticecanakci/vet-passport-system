@@ -360,6 +360,17 @@ const VP = (() => {
     onDuty: () => ls.get(KEYS.CLINICS).filter(c => c.onDuty),
     get: (id) => ls.get(KEYS.CLINICS).find(c => c.id === id) ?? null,
     save: (arr) => ls.set(KEYS.CLINICS, arr),
+    update: (id, patch) => {
+      const a = clinics.all().map(c => c.id === id ? { ...c, ...patch } : c);
+      clinics.save(a);
+      return a.find(c => c.id === id) ?? null;
+    },
+    /** Kliniğin nöbetçi durumunu (onDuty) tersine çevirip kaydeder; güncel kaydı döndürür */
+    toggleDuty: (id) => {
+      const c = clinics.get(id);
+      if (!c) return null;
+      return clinics.update(id, { onDuty: !c.onDuty });
+    },
   };
 
   /* ── 4. Rol Yönetimi ─────────────────────────────────── */
@@ -768,9 +779,23 @@ window.switchCurrentRole = (targetRole) => {
   VP.role?.switchTo(targetRole);
 };
 
+/**
+ * Rol bazlı görünürlük: [data-vet-only] yalnızca VET'te, [data-owner-only] yalnızca OWNER'da görünür.
+ * Sayfa içi rol değişiminde (yönlendirmesiz) tekrar çağrılmalıdır.
+ */
+window.applyRoleVisibility = () => {
+  const isVet = VP.role.isVet();
+  document.querySelectorAll('[data-vet-only]').forEach(el => { el.style.display = isVet ? '' : 'none'; });
+  document.querySelectorAll('[data-owner-only]').forEach(el => { el.style.display = isVet ? 'none' : ''; });
+};
+
+/* Script body sonunda yüklendiği için navbar zaten DOM'da: titremeyi önlemek için hemen uygula */
+window.applyRoleVisibility();
+
 /* Global init – DOM hazır olduğunda çalış */
 document.addEventListener('DOMContentLoaded', () => {
   VP.init?.(); /* init iç fonksiyon, doğrudan çağırılamaz; init() burada çalışır */
+  window.applyRoleVisibility();
 
   /* Navbar'daki aktif bağlantıyı işaretle */
   document.querySelectorAll('.navbar-nav a').forEach(a => {

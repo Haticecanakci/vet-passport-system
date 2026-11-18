@@ -64,7 +64,7 @@
         <a href="/appointments" class="px-3 py-2 rounded-xl bg-teal-50 text-teal-700 border border-teal-200 flex items-center gap-1.5 transition-all">
           <i class="fa-solid fa-calendar-check text-teal-600"></i> Randevular
         </a>
-        <a href="/vet/exam" class="px-3 py-2 rounded-xl hover:bg-slate-100 hover:text-teal-700 flex items-center gap-1.5 transition-all">
+        <a href="/vet/exam" data-vet-only class="px-3 py-2 rounded-xl hover:bg-slate-100 hover:text-teal-700 flex items-center gap-1.5 transition-all">
           <i class="fa-solid fa-stethoscope text-teal-500"></i> Muayene
         </a>
         <a href="/emergency" class="px-3 py-2 rounded-xl hover:bg-red-50 text-red-600 flex items-center gap-1.5 transition-all">
@@ -326,7 +326,7 @@
   </footer>
 
   <!-- Central LocalStorage Script -->
-  <script src="/js/app.js?v=4"></script>
+  <script src="/js/app.js?v=6"></script>
 
   <!-- Appointments Controller Script -->
   <script>
@@ -375,9 +375,9 @@
       const clinicSelect = document.getElementById('aptClinicSelect');
       const allClinics = VP.clinics ? VP.clinics.all() : [];
 
-      clinicSelect.innerHTML = allClinics.map((c, i) => 
+      clinicSelect.innerHTML = allClinics.map((c, i) =>
         `<option value="${c.id}" ${i === 0 ? 'selected' : ''}>
-           ${c.name} ${c.onDuty ? '🟢 (Nöbetçi)' : ''}
+           ${clinicOptionLabel(c)}
          </option>`
       ).join('');
 
@@ -392,6 +392,29 @@
     }
 
     // Klinik değiştiğinde hekim listesini güncelle
+    // Klinik seçeneği etiketi (nöbetçi rozetiyle)
+    function clinicOptionLabel(c) {
+      return `${c.name} ${c.onDuty ? '🟢 (Nöbetçi)' : ''}`.trim();
+    }
+
+    // Seçimi bozmadan yalnızca klinik etiketlerini güncel onDuty durumuyla yenile
+    function refreshClinicDutyLabels() {
+      const clinicSelect = document.getElementById('aptClinicSelect');
+      if (!clinicSelect || !VP.clinics) return;
+      Array.from(clinicSelect.options).forEach(opt => {
+        const c = VP.clinics.get(opt.value);
+        if (c) opt.textContent = clinicOptionLabel(c);
+      });
+    }
+
+    // Veteriner panelinden nöbet durumu değişirse (başka sekme / geri tuşu) rozetleri güncelle
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'vp_clinics') refreshClinicDutyLabels();
+    });
+    window.addEventListener('pageshow', (e) => {
+      if (e.persisted) refreshClinicDutyLabels();
+    });
+
     function onClinicChange() {
       const clinicId = document.getElementById('aptClinicSelect').value;
       const clinic = VP.clinics ? VP.clinics.get(clinicId) : null;

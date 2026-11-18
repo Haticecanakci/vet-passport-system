@@ -70,7 +70,7 @@
         <a href="/appointments" class="px-3 py-2 rounded-xl hover:bg-slate-100 hover:text-teal-700 flex items-center gap-1.5 transition-all">
           <i class="fa-solid fa-calendar-check text-teal-500"></i> Randevular
         </a>
-        <a href="/vet/exam" class="px-3 py-2 rounded-xl hover:bg-slate-100 hover:text-teal-700 flex items-center gap-1.5 transition-all">
+        <a href="/vet/exam" data-vet-only class="px-3 py-2 rounded-xl hover:bg-slate-100 hover:text-teal-700 flex items-center gap-1.5 transition-all">
           <i class="fa-solid fa-stethoscope text-teal-500"></i> Muayene
         </a>
         <a href="/emergency" class="px-3 py-2 rounded-xl hover:bg-red-50 text-red-600 flex items-center gap-1.5 transition-all">
@@ -373,11 +373,22 @@
               <h3 class="text-base font-bold text-slate-900">Klinik Muayene & Elektronik Reçeteler</h3>
               <p class="text-xs text-slate-500">Geçmiş veteriner ziyaretleri, teşhisler, tedavi protokolleri ve ilaç dozajları</p>
             </div>
-            <a 
-              href="/vet/exam" 
+            <!-- VET: Yeni Muayene Ekle / OWNER: Randevu Al (href'ler renderPassportCard'da pet id ile ayarlanır) -->
+            <a
+              id="btnNewExam"
+              href="/vet/exam"
+              style="display:none"
               class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-1.5 transition-colors"
             >
               <i class="fa-solid fa-stethoscope"></i> Yeni Muayene Ekle
+            </a>
+            <a
+              id="btnOwnerBookApt"
+              href="/appointments"
+              style="display:none"
+              class="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs flex items-center gap-1.5 transition-colors"
+            >
+              <i class="fa-solid fa-calendar-plus"></i> Randevu Al
             </a>
           </div>
 
@@ -432,7 +443,7 @@
   </footer>
 
   <!-- Central LocalStorage Script -->
-  <script src="/js/app.js?v=4"></script>
+  <script src="/js/app.js?v=6"></script>
 
   <!-- Passport Logic -->
   <script>
@@ -521,6 +532,15 @@
       if (addVacBtn) {
         addVacBtn.href = `/appointments?petId=${pet.id}`;
       }
+
+      // Muayene sekmesi: rol bazlı buton (VET → Yeni Muayene, OWNER → Randevu Al)
+      const isVet = VP.role ? VP.role.isVet() : false;
+      const newExamBtn = document.getElementById('btnNewExam');
+      const ownerAptBtn = document.getElementById('btnOwnerBookApt');
+      newExamBtn.href = `/vet/exam?petId=${encodeURIComponent(pet.id)}`;
+      ownerAptBtn.href = `/appointments?petId=${encodeURIComponent(pet.id)}`;
+      newExamBtn.style.display = isVet ? '' : 'none';
+      ownerAptBtn.style.display = isVet ? 'none' : '';
 
       // Dinamik QR Kod üretimi (QRCode.js CDN)
       generateQRCode(pet);

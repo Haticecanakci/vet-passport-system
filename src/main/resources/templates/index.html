@@ -425,7 +425,7 @@
   </footer>
 
   <!-- Central LocalStorage Script -->
-  <script src="/js/app.js?v=4"></script>
+  <script src="/js/app.js?v=6"></script>
 
   <!-- Page Specific Logic -->
   <script>
@@ -560,6 +560,15 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       renderClinics();
+    });
+
+    // Veteriner panelinden nöbet durumu değişirse (başka sekme) listeyi anında güncelle
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'vp_clinics') renderClinics();
+    });
+    // Geri tuşuyla önbellekten dönülünce de güncel durumu göster
+    window.addEventListener('pageshow', (e) => {
+      if (e.persisted) renderClinics();
     });
   </script>
 </body>
