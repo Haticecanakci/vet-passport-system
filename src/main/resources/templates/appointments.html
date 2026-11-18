@@ -375,11 +375,18 @@
       const clinicSelect = document.getElementById('aptClinicSelect');
       const allClinics = VP.clinics ? VP.clinics.all() : [];
 
-      clinicSelect.innerHTML = allClinics.map((c, i) =>
-        `<option value="${c.id}" ${i === 0 ? 'selected' : ''}>
+      // URL'den gelen clinicId (ör. index.html "Randevu Al") geçerliyse onu, değilse ilk kliniği seç
+      const urlClinicId = urlParams.get('clinicId');
+      const preSelectedClinicId = allClinics.some(c => c.id === urlClinicId)
+        ? urlClinicId
+        : (allClinics[0]?.id || '');
+
+      clinicSelect.innerHTML = allClinics.map(c =>
+        `<option value="${c.id}" ${c.id === preSelectedClinicId ? 'selected' : ''}>
            ${clinicOptionLabel(c)}
          </option>`
       ).join('');
+      clinicSelect.value = preSelectedClinicId;
 
       // 3. Tarih (Varsayılan: Bugün veya 7 gün sonrası)
       const dateInput = document.getElementById('aptDateSelect');
@@ -387,11 +394,10 @@
       dateInput.value = defaultDate;
       dateInput.min = VP.today();
 
-      // Klinik değişince hekimleri doldur
-      onClinicChange();
+      // change olayını tetikle → onClinicChange: hekim listesi ve müsait saatler seçili kliniğe göre dolar
+      clinicSelect.dispatchEvent(new Event('change'));
     }
 
-    // Klinik değiştiğinde hekim listesini güncelle
     // Klinik seçeneği etiketi (nöbetçi rozetiyle)
     function clinicOptionLabel(c) {
       return `${c.name} ${c.onDuty ? '🟢 (Nöbetçi)' : ''}`.trim();
@@ -415,6 +421,7 @@
       if (e.persisted) refreshClinicDutyLabels();
     });
 
+    // Klinik değiştiğinde hekim listesini güncelle
     function onClinicChange() {
       const clinicId = document.getElementById('aptClinicSelect').value;
       const clinic = VP.clinics ? VP.clinics.get(clinicId) : null;

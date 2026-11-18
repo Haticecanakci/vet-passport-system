@@ -549,7 +549,7 @@
               <a href="tel:${c.phone}" class="flex-1 py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold text-center transition-colors flex items-center justify-center gap-2">
                 <i class="fa-solid fa-phone"></i> Hemen Ara
               </a>
-              <a href="/appointments" class="flex-1 py-2.5 px-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold text-center shadow-sm transition-colors flex items-center justify-center gap-2">
+              <a href="/appointments?clinicId=${encodeURIComponent(c.id)}" class="flex-1 py-2.5 px-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold text-center shadow-sm transition-colors flex items-center justify-center gap-2">
                 <i class="fa-solid fa-calendar-plus"></i> Randevu Al
               </a>
             </div>
