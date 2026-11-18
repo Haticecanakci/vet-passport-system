@@ -1,8 +1,6 @@
 # Gradle build and cache directories
 .gradle/
 build/
-!gradle/wrapper/gradle-wrapper.jar
-!gradle/wrapper/gradle-wrapper.properties
 
 # Compiled Java class files
 *.class
@@ -18,6 +16,10 @@ build/
 *.zip
 *.tar.gz
 *.rar
+
+# Gradle Wrapper her zaman repoda olmalı (istisnalar *.jar kuralından SONRA gelmeli)
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
 
 # Virtual Machine crash logs
 hs_err_pid*

@@ -1,0 +1,7 @@
+# Linux/macOS betikleri LF, Windows betikleri CRLF olmalı
+/gradlew        text eol=lf
+*.bat           text eol=crlf
+*.cmd           text eol=crlf
+
+# İkili dosyalar
+*.jar           binary
