@@ -142,7 +142,7 @@
           
           <a 
             id="btnCallOwner" 
-            href="tel:05321112233" 
+            href="tel:05510456810" 
             class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold text-base shadow-xl shadow-emerald-600/30 transition-all flex items-center justify-center gap-3 transform active:scale-95"
           >
             <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-lg animate-pulse">
@@ -150,9 +150,20 @@
             </div>
             <div class="text-left">
               <span class="block text-[11px] text-emerald-100 uppercase tracking-widest font-semibold">SAHİBİNİ TEK TIKLA HEMEN ARA</span>
-              <span id="emgOwnerNameAndPhone" class="text-base font-black">Ahmet Yılmaz • 0532 111 2233</span>
+              <span id="emgOwnerNameAndPhone" class="text-base font-black">Ahmet Yılmaz • 0551 045 6810</span>
             </div>
           </a>
+
+          <!-- WhatsApp ile Konum ve Mesaj Gönder -->
+          <button
+            type="button"
+            id="btnWhatsAppOwner"
+            onclick="sendWhatsAppLocation()"
+            class="w-full py-3 px-4 rounded-xl bg-green-600 hover:bg-green-700 disabled:opacity-70 disabled:cursor-wait text-white font-bold text-sm shadow-lg shadow-green-600/25 transition-all flex items-center justify-center gap-2 transform active:scale-95"
+          >
+            <i class="fa-brands fa-whatsapp text-lg"></i>
+            <span id="btnWhatsAppLabel">WhatsApp ile Konum ve Mesaj Gönder</span>
+          </button>
 
           <!-- Konum Bildir Simülasyon Butonu -->
           <button 
@@ -207,7 +218,7 @@
   </footer>
 
   <!-- Central LocalStorage Script -->
-  <script src="/js/app.js"></script>
+  <script src="/js/app.js?v=4"></script>
 
   <!-- Emergency Card Logic -->
   <script>
@@ -272,7 +283,7 @@
       document.getElementById('emgAllergiesBox').textContent = allergyText;
 
       // Sahibini Ara butonu
-      const ownerPhone = pet.ownerPhone || '0532 111 2233';
+      const ownerPhone = pet.ownerPhone || '0551 045 6810';
       const ownerName = pet.ownerName || 'Ahmet Yılmaz';
 
       const callBtn = document.getElementById('btnCallOwner');
@@ -299,6 +310,77 @@
       } else {
         alert('Konumunuz evcil hayvanın sahibine SMS ile iletildi!');
       }
+    }
+
+    // TEST: Doluysa WhatsApp mesajı hayvan sahibine değil bu numaraya gider.
+    // Gerçek kullanımda boş string ('') yapın.
+    const WHATSAPP_TEST_NUMBER = '05510456810';
+
+    // Telefonu wa.me formatına çevir: boşluk/işaretleri at, baştaki 0'ı kaldırıp 90 ekle
+    function toWhatsAppNumber(phone) {
+      let digits = String(phone || '').replace(/\D/g, '');
+      if (digits.startsWith('90') && digits.length === 12) return digits;
+      if (digits.startsWith('0')) digits = digits.slice(1);
+      return `90${digits}`;
+    }
+
+    // Konumu almaya çalış; izin yoksa / desteklenmiyorsa / zaman aşımında null döner
+    function tryGetLocation() {
+      return new Promise((resolve) => {
+        if (!('geolocation' in navigator)) return resolve(null);
+        navigator.geolocation.getCurrentPosition(
+          (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+          () => resolve(null),
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+        );
+      });
+    }
+
+    // WhatsApp ile konum ve hazır mesaj gönder
+    async function sendWhatsAppLocation() {
+      if (!currentFoundPet) {
+        VP.toast?.show('Önce bir hayvan kaydı sorgulayınız.', 'warning');
+        return;
+      }
+
+      const petName = currentFoundPet.name || 'Evcil hayvan';
+      const chipNo = currentFoundPet.microchipNo || 'Kayıtsız';
+      const waNumber = toWhatsAppNumber(WHATSAPP_TEST_NUMBER || currentFoundPet.ownerPhone || '0551 045 6810');
+
+      // Popup engelleyiciye takılmamak için sekmeyi tıklama anında aç, URL'yi konum gelince ver
+      const waWindow = window.open('', '_blank');
+      if (waWindow) {
+        waWindow.document.title = 'WhatsApp açılıyor...';
+        waWindow.document.body.textContent = 'Konum alınıyor, WhatsApp açılıyor...';
+      }
+
+      const btn = document.getElementById('btnWhatsAppOwner');
+      const label = document.getElementById('btnWhatsAppLabel');
+      const originalLabel = label.textContent;
+      btn.disabled = true;
+      label.textContent = 'Konum alınıyor...';
+
+      const loc = await tryGetLocation();
+
+      let message = `Merhaba, ${petName} (${chipNo}) isimli dostunuzu buldum. VetPassport acil kartı üzerinden size ulaşıyorum.`;
+      if (loc) {
+        message += `\n\nŞu anki konumum: https://maps.google.com/?q=${loc.lat},${loc.lng}`;
+      } else {
+        message += `\n\n(Konum paylaşılamadı, lütfen bu numaradan bana dönüş yapınız.)`;
+      }
+
+      const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`;
+
+      if (waWindow && !waWindow.closed) {
+        waWindow.location.href = waUrl;
+      } else {
+        // Sekme engellendiyse aynı sekmede aç
+        window.location.href = waUrl;
+      }
+
+      btn.disabled = false;
+      label.textContent = originalLabel;
+      VP.toast?.show(loc ? '📍 Konumlu mesaj WhatsApp\'a hazırlandı.' : 'Konum alınamadı, mesaj konumsuz hazırlandı.', loc ? 'success' : 'warning');
     }
 
     // Nöbetçi klinikleri listele

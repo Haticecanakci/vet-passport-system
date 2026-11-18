@@ -90,7 +90,7 @@ const VP = (() => {
       microchipNo: 'MC123456789',
       ownerId: 'OWN001',
       ownerName: 'Ahmet Yılmaz',
-      ownerPhone: '0532 111 2233',
+      ownerPhone: '0551 045 6810',
       photoEmoji: '🐱',
       createdAt: '2024-01-10',
     },
@@ -106,7 +106,7 @@ const VP = (() => {
       microchipNo: 'MC987654321',
       ownerId: 'OWN001',
       ownerName: 'Ahmet Yılmaz',
-      ownerPhone: '0532 111 2233',
+      ownerPhone: '0551 045 6810',
       photoEmoji: '🐶',
       createdAt: '2024-02-05',
     },
@@ -396,7 +396,7 @@ const VP = (() => {
   /* ── 4b. Oturum Kullanıcısı ──────────────────────────── */
 
   /** Gerçek giriş yokken kullanılan demo hayvan sahibi */
-  const DEMO_OWNER = { id: 'OWN001', name: 'Ahmet Yılmaz', phone: '0532 111 2233' };
+  const DEMO_OWNER = { id: 'OWN001', name: 'Ahmet Yılmaz', phone: '0551 045 6810' };
 
   const session = {
     /** Oturumdaki kullanıcıyı döndürür; kayıt yoksa demo sahibi */
@@ -671,9 +671,24 @@ const VP = (() => {
 
   /* ── 10. Init – Seed Verisi Yükle ───────────────────── */
 
+  /**
+   * Tek seferlik geçiş: tarayıcıda zaten kayıtlı tüm hayvanların sahip
+   * telefonunu DEMO_OWNER.phone ile günceller (eski seed verisi için).
+   */
+  const migrateOwnerPhones = () => {
+    const FLAG = 'vp_owner_phone_v2';
+    if (ls.getString(FLAG) === '1') return;
+    const updated = ls.get(KEYS.PETS).map(p => ({ ...p, ownerPhone: DEMO_OWNER.phone }));
+    ls.set(KEYS.PETS, updated);
+    ls.setString(FLAG, '1');
+  };
+
   const init = () => {
     /* Daha önce yüklendiyse tekrar yükleme */
-    if (ls.getString('vp_seeded') === '1') return;
+    if (ls.getString('vp_seeded') === '1') {
+      migrateOwnerPhones();
+      return;
+    }
 
     ls.set(KEYS.PETS,          SEED_PETS);
     ls.set(KEYS.VACCINES,      SEED_VACCINES);
@@ -683,6 +698,7 @@ const VP = (() => {
     ls.set(KEYS.APPOINTMENTS,  SEED_APPOINTMENTS);
     ls.set(KEYS.CLINICS,       SEED_CLINICS);
     ls.setString('vp_seeded',  '1');
+    ls.setString('vp_owner_phone_v2', '1'); /* seed zaten yeni numarayı içeriyor */
 
     console.info('[VetPassport] ✅ Başlangıç verileri yüklendi.');
   };
