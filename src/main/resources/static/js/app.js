@@ -408,6 +408,7 @@ const VP = (() => {
 
   /** Gerçek giriş yokken kullanılan demo hayvan sahibi */
   const DEMO_OWNER = { id: 'OWN001', name: 'Ahmet Yılmaz', phone: '0551 045 6810' };
+  const DEMO_VET   = { name: 'Dr. Selin Demir', clinicId: 'CLN001' };
 
   const session = {
     /** Oturumdaki kullanıcıyı döndürür; kayıt yoksa demo sahibi */
@@ -416,6 +417,8 @@ const VP = (() => {
       return (u && u.name) ? { ...DEMO_OWNER, ...u } : { ...DEMO_OWNER };
     },
     setUser: (user) => ls.set(KEYS.ACTIVE_USER, user),
+    /** Oturumdaki veteriner hekim (demo: Pati Veteriner Kliniği – Dr. Selin Demir) */
+    currentVet: () => ({ ...DEMO_VET }),
   };
 
   /* ── 5. Pasaport No & Aşı Takvimi Üreteci ────────────── */
@@ -530,6 +533,53 @@ const VP = (() => {
       removedVaccines: allVaccines.length - keptVaccines.length,
       removedAppointments: allApts.length - keptApts.length,
     };
+  };
+
+  /**
+   * Hayvan sahibi hesabını siler: oturum kullanıcısını (vp_active_user),
+   * bu sahibe ait tüm hayvanları ve o hayvanların aşı ve randevu kayıtlarını temizler.
+   * @param {string} ownerId
+   * @returns {{removedPets: number, removedVaccines: number, removedAppointments: number}}
+   */
+  const deleteOwner = (ownerId) => {
+    const ownedPetIds = pets.all().filter(p => p.ownerId === ownerId).map(p => p.id);
+
+    const totals = { removedPets: 0, removedVaccines: 0, removedAppointments: 0 };
+    ownedPetIds.forEach(id => {
+      const r = deletePet(id);
+      if (!r) return;
+      totals.removedPets += 1;
+      totals.removedVaccines += r.removedVaccines;
+      totals.removedAppointments += r.removedAppointments;
+    });
+
+    localStorage.removeItem(KEYS.ACTIVE_USER);
+    return totals;
+  };
+
+  /**
+   * Veteriner hekim hesabını siler: hekimi bağlı olduğu tüm kliniklerin kadrosundan
+   * ve dolu-saat tablosundan çıkarır, hekime ait bekleyen (tamamlanmamış) randevuları temizler.
+   * Tamamlanmış randevular geçmiş kaydı olarak korunur.
+   * @param {string} vetName
+   * @returns {{clinicsAffected: number, removedAppointments: number}}
+   */
+  const deleteVet = (vetName) => {
+    let clinicsAffected = 0;
+    const updatedClinics = clinics.all().map(c => {
+      if (!(c.vets || []).includes(vetName)) return c;
+      clinicsAffected += 1;
+      const slots = { ...(c.availableSlots || {}) };
+      Object.keys(slots).forEach(k => { if (k.startsWith(`${vetName}|`)) delete slots[k]; });
+      return { ...c, vets: c.vets.filter(v => v !== vetName), availableSlots: slots };
+    });
+    clinics.save(updatedClinics);
+
+    const allApts = appointments.all();
+    const keptApts = allApts.filter(a => !(a.vetName === vetName && a.status !== 'completed'));
+    appointments.save(keptApts);
+
+    return { clinicsAffected, removedAppointments: allApts.length - keptApts.length };
   };
 
   /* ── 6. Randevu – Dolu Saat Kilitleme ───────────────── */
@@ -783,6 +833,8 @@ const VP = (() => {
     session,
     registerPet,
     deletePet,
+    deleteOwner,
+    deleteVet,
     bookAppointment,
     getBookedSlots,
     buildSlotList,

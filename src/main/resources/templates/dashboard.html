@@ -148,6 +148,15 @@
               <i class="fa-solid fa-calendar-plus"></i>
               <span>Randevu Al</span>
             </a>
+            <!-- Hesabımı Sil (OWNER) -->
+            <button
+              type="button"
+              onclick="confirmDeleteOwnerAccount()"
+              class="px-3.5 py-2 rounded-xl border-2 border-red-400/80 text-red-100 hover:bg-red-600 hover:border-red-600 hover:text-white font-bold text-[11px] transition-all flex items-center gap-1.5"
+            >
+              <i class="fa-solid fa-user-xmark"></i>
+              <span>Hesabımı Sil</span>
+            </button>
           </div>
         </div>
       </div>
@@ -299,6 +308,15 @@
               <i id="vetDutyIcon" class="fa-solid fa-truck-medical"></i>
               <span id="vetDutyLabel">Nöbetçi Durumu: Aktif</span>
             </button>
+            <!-- Hesabımı Sil (VET) -->
+            <button
+              type="button"
+              onclick="confirmDeleteVetAccount()"
+              class="px-3.5 py-2 rounded-xl border-2 border-red-400/80 text-red-100 hover:bg-red-600 hover:border-red-600 hover:text-white font-bold text-[11px] transition-all flex items-center gap-1.5"
+            >
+              <i class="fa-solid fa-user-xmark"></i>
+              <span>Hesabımı Sil</span>
+            </button>
           </div>
         </div>
       </div>
@@ -434,7 +452,7 @@
   </footer>
 
   <!-- Central LocalStorage Script -->
-  <script src="/js/app.js?v=7"></script>
+  <script src="/js/app.js?v=8"></script>
 
   <!-- Dashboard Controller Script -->
   <script>
@@ -781,6 +799,32 @@
     }
 
     // Pasaport sayfasına yönlendir ve aktif hayvanı kaydet
+    // -------------------------------------------------------------
+    // HESAP SİLME (OWNER / VET)
+    // -------------------------------------------------------------
+    function redirectToLoginAfterDelete(message) {
+      VP.toast?.show(message, 'info', 2500);
+      setTimeout(() => { window.location.href = '/login'; }, 1200);
+    }
+
+    function confirmDeleteOwnerAccount() {
+      const ok = confirm('Hesabınızı silmek istediğinize emin misiniz? Kayıtlı tüm dostlarınız ve randevu geçmişiniz kalıcı olarak silinecektir.');
+      if (!ok) return;
+
+      const owner = VP.session.currentUser();
+      const r = VP.deleteOwner(owner.id);
+      redirectToLoginAfterDelete(`Hesabınız silindi (${r.removedPets} dost, ${r.removedAppointments} randevu kaldırıldı). Giriş ekranına yönlendiriliyorsunuz...`);
+    }
+
+    function confirmDeleteVetAccount() {
+      const ok = confirm('Veteriner hekim kaydınızı ve klinik kadro bilginizi silmek istediğinize emin misiniz?');
+      if (!ok) return;
+
+      const vet = VP.session.currentVet();
+      const r = VP.deleteVet(vet.name);
+      redirectToLoginAfterDelete(`${vet.name} kaydı silindi (${r.removedAppointments} bekleyen randevu kaldırıldı). Giriş ekranına yönlendiriliyorsunuz...`);
+    }
+
     // Vefat kaydı: onay al → hayvanı, aşılarını ve randevularını sil → paneli yeniden çiz
     function confirmPetDeceased(petId) {
       const pet = VP.pets.get(petId);
