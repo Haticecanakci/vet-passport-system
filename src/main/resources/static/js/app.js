@@ -661,6 +661,10 @@ const VP = (() => {
    * @returns {Object} güncellenmiş aşı
    */
   const completeVaccine = (vaccineId, data, nextIntervalDays = 365) => {
+    /* Zaten uygulanmış aşı tekrar tamamlanmaz → mükerrer rapel oluşmaz */
+    const existing = vaccines.all().find(x => x.id === vaccineId);
+    if (!existing || existing.status === 'done') return null;
+
     const v = vaccines.update(vaccineId, {
       status: 'done',
       administeredDate: data.administered || today(),
@@ -673,10 +677,14 @@ const VP = (() => {
 
     /* Bir sonraki rapeli oluştur */
     const nextDate = addDays(v.administeredDate, nextIntervalDays);
+    /* Ad zaten "(Yıllık Rapel)" içeriyorsa (veya seed'deki gibi "Yıllık Rapel" ise) tekrar ekleme */
+    const RAPEL_SUFFIX = '(Yıllık Rapel)';
+    const alreadyRapel = v.name.includes(RAPEL_SUFFIX) || v.name.trim() === 'Yıllık Rapel';
+    const nextName = alreadyRapel ? v.name : `${v.name} ${RAPEL_SUFFIX}`;
     vaccines.add({
       id: `VAC-${uid()}`,
       petId: v.petId,
-      name: `${v.name} (Yıllık Rapel)`,
+      name: nextName,
       scheduledDate: nextDate,
       administeredDate: null,
       status: 'upcoming',

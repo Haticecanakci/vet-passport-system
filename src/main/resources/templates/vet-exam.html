@@ -375,12 +375,14 @@
   </footer>
 
   <!-- Central LocalStorage Script -->
-  <script src="/js/app.js?v=8"></script>
+  <script src="/js/app.js?v=9"></script>
 
   <!-- Vet Exam Page Logic -->
   <script>
     let currentExamPet = null;
     let selectedAppointmentId = null;
+    // Bu oturumda uygulanan aşılar: listede "Uygulandı ✓" (kilitli) olarak kalır
+    const appliedVaccineIds = new Set();
 
     // Rol değiştir
     function switchCurrentRole(targetRole) {
@@ -621,12 +623,23 @@
     // ===================================================================
     // ETKİLEŞİMLİ AŞI UYGULAMA ALANI
     // ===================================================================
+    const VACCINE_APPLY_WINDOW_DAYS = 30;
+
+    // Aşı bugün uygulanabilir mi? (gecikmiş / vadesi gelmiş / 30 gün içinde yaklaşan)
+    function getVaccineWindow(v) {
+      const daysUntil = VP.diffDays(v.scheduledDate);
+      const isOverdue = v.status === 'overdue' || daysUntil < 0;
+      const canApply = isOverdue || daysUntil <= VACCINE_APPLY_WINDOW_DAYS;
+      const isAutoRapel = (v.notes || '').startsWith('Otomatik rapel') || (v.name || '').includes('Yıllık Rapel');
+      return { daysUntil, isOverdue, canApply, isFutureRapel: !canApply && isAutoRapel };
+    }
+
     function renderPendingVaccines(petId) {
       const container = document.getElementById('pendingVaccinesContainer');
       const petVaccines = VP.vaccines ? VP.vaccines.forPet(petId) : [];
 
-      // Henüz yapılmamış (upcoming veya overdue) aşılar
-      const pending = petVaccines.filter(v => v.status !== 'done');
+      // Henüz yapılmamış (upcoming veya overdue) aşılar + bu oturumda uygulananlar (kilitli gösterilir)
+      const pending = petVaccines.filter(v => v.status !== 'done' || appliedVaccineIds.has(v.id));
 
       if (pending.length === 0) {
         container.innerHTML = `
@@ -639,11 +652,67 @@
       }
 
       container.innerHTML = pending.map(v => {
-        const isOverdue = v.status === 'overdue';
+        const isApplied = v.status === 'done';
+        const { daysUntil, isOverdue, canApply, isFutureRapel } = getVaccineWindow(v);
+        const isLocked = !isApplied && !canApply;
         const batchInputId = `batch_${v.id}`;
 
+        const cardClass = isApplied
+          ? 'border-emerald-200 bg-emerald-50/40'
+          : isLocked
+            ? 'border-slate-200 bg-white opacity-75'
+            : (isOverdue ? 'border-red-200 bg-red-50/40' : 'border-slate-200 bg-slate-50/60');
+
+        const statusBadge = isApplied ? `
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">
+                  <i class="fa-solid fa-check mr-1"></i> Uygulandı
+                </span>
+              ` : isLocked ? `
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                  <i class="fa-regular fa-calendar mr-1"></i> Planlandı · ${daysUntil} gün
+                </span>
+              ` : isOverdue ? `
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700 border border-red-200">
+                  <i class="fa-solid fa-triangle-exclamation mr-1"></i> Gecikmiş
+                </span>
+              ` : `
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200">
+                  <i class="fa-regular fa-clock mr-1"></i> Yaklaşan
+                </span>
+              `;
+
+        const actionButton = isApplied ? `
+              <button
+                type="button"
+                disabled
+                aria-disabled="true"
+                class="px-3.5 py-1.5 rounded-xl bg-slate-200 text-slate-500 font-bold text-xs flex items-center gap-1.5 cursor-not-allowed whitespace-nowrap"
+              >
+                Uygulandı ✓
+              </button>
+            ` : isLocked ? `
+              <button
+                type="button"
+                disabled
+                aria-disabled="true"
+                title="Bu aşı ${VP.fmtDate(v.scheduledDate)} tarihine planlı; ${VACCINE_APPLY_WINDOW_DAYS} günlük uygulama aralığına girmeden işaretlenemez."
+                class="px-3.5 py-1.5 rounded-xl bg-slate-100 text-slate-400 border border-slate-200 font-bold text-xs flex items-center gap-1.5 cursor-not-allowed whitespace-nowrap"
+              >
+                <i class="fa-regular fa-calendar-check"></i> ${isFutureRapel ? 'Gelecek Yıla Planlandı' : 'Vadesi Gelmedi'}
+              </button>
+            ` : `
+              <button
+                type="button"
+                id="applyBtn_${v.id}"
+                onclick="applyVaccine('${v.id}', '${batchInputId}', this)"
+                class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all whitespace-nowrap"
+              >
+                <i class="fa-solid fa-syringe"></i> Aşıyı Tamamla
+              </button>
+            `;
+
         return `
-          <div class="p-4 rounded-2xl border ${isOverdue ? 'border-red-200 bg-red-50/40' : 'border-slate-200 bg-slate-50/60'} space-y-3">
+          <div class="p-4 rounded-2xl border ${cardClass} space-y-3">
             
             <div class="flex items-center justify-between">
               <div>
@@ -653,33 +722,20 @@
                 </div>
               </div>
 
-              ${isOverdue ? `
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700 border border-red-200">
-                  <i class="fa-solid fa-triangle-exclamation mr-1"></i> Gecikmiş
-                </span>
-              ` : `
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200">
-                  <i class="fa-regular fa-clock mr-1"></i> Yaklaşan
-                </span>
-              `}
+              ${statusBadge}
             </div>
 
             <!-- Seri No Girişi ve Uygulama Butonu -->
             <div class="flex items-center gap-2 pt-1">
-              <input 
-                type="text" 
-                id="${batchInputId}" 
-                placeholder="Aşı Parti/Seri No (Örn: B2026-X)" 
-                value="B2026-${Math.floor(1000 + Math.random()*9000)}"
-                class="flex-1 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-mono outline-none bg-white"
+              <input
+                type="text"
+                id="${batchInputId}"
+                placeholder="Aşı Parti/Seri No (Örn: B2026-X)"
+                value="${isApplied ? (v.batchNo || '') : isLocked ? '' : `B2026-${Math.floor(1000 + Math.random()*9000)}`}"
+                ${isApplied || isLocked ? 'readonly' : ''}
+                class="flex-1 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-mono outline-none ${isApplied || isLocked ? 'bg-slate-100 text-slate-500' : 'bg-white'}"
               />
-              <button 
-                type="button" 
-                onclick="applyVaccine('${v.id}', '${batchInputId}')"
-                class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all whitespace-nowrap"
-              >
-                <i class="fa-solid fa-syringe"></i> Aşıyı Tamamla
-              </button>
+              ${actionButton}
             </div>
 
           </div>
@@ -688,7 +744,23 @@
     }
 
     // Aşıyı tamamla ve otomatik sonraki rapeli hesaplat
-    function applyVaccine(vaccineId, batchInputId) {
+    function applyVaccine(vaccineId, batchInputId, btn) {
+      // Çift tıklama / tekrar basma koruması
+      if (appliedVaccineIds.has(vaccineId) || (btn && btn.disabled)) return;
+
+      // Uygulama aralığı dışındaki (ör. gelecek yılın rapeli) aşı işaretlenemez
+      const target = VP.vaccines.all().find(x => x.id === vaccineId);
+      if (!target || !getVaccineWindow(target).canApply) {
+        VP.toast?.show('Bu aşının uygulama zamanı henüz gelmedi.', 'warning');
+        renderPendingVaccines(currentExamPet.id);
+        return;
+      }
+
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Uygulanıyor...';
+      }
+
       const batchNo = document.getElementById(batchInputId)?.value.trim() || 'SERİ-2026';
       const vetName = document.getElementById('examVetName')?.value.trim() || 'Dr. Selin Demir';
 
@@ -703,10 +775,19 @@
       // (aşıyı tamamlar + otomatik olarak 1 yıl sonraki rapeli ekler)
       const completed = VP.completeVaccine(vaccineId, data, 365);
 
-      if (completed) {
-        // Listeyi tazele
-        renderPendingVaccines(currentExamPet.id);
+      // Başarılıysa (veya aşı zaten uygulanmışsa) oturum boyunca kilitli kalsın
+      const nowDone = VP.vaccines.all().find(x => x.id === vaccineId)?.status === 'done';
+      if (completed || nowDone) {
+        appliedVaccineIds.add(vaccineId);
+      } else if (btn) {
+        // Beklenmeyen hata: butonu geri aç
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-syringe"></i> Aşıyı Tamamla';
+        return;
       }
+
+      // Listeyi tazele (uygulanan aşı "Uygulandı ✓" ile kilitli görünür, yeni rapel eklenir)
+      renderPendingVaccines(currentExamPet.id);
     }
 
     document.addEventListener('DOMContentLoaded', () => {
