@@ -434,7 +434,7 @@
   </footer>
 
   <!-- Central LocalStorage Script -->
-  <script src="/js/app.js?v=6"></script>
+  <script src="/js/app.js?v=7"></script>
 
   <!-- Dashboard Controller Script -->
   <script>
@@ -492,6 +492,14 @@
 
       // Hayvan Kartları
       const petsContainer = document.getElementById('ownerPetsContainer');
+      if (pets.length === 0) {
+        petsContainer.innerHTML = `
+          <div class="md:col-span-2 py-10 text-center text-xs text-slate-400 bg-white rounded-2xl border border-dashed border-slate-200">
+            <div class="text-3xl mb-2">🐾</div>
+            Kayıtlı evcil hayvanınız bulunmuyor.
+            <a href="/pets/new" class="block mt-2 text-teal-700 font-bold hover:underline">+ Yeni Hayvan Ekle</a>
+          </div>`;
+      } else
       petsContainer.innerHTML = pets.map(pet => {
         const petVaccines = allVaccines.filter(v => v.petId === pet.id);
         const hasOverdue = petVaccines.some(v => v.status === 'overdue');
@@ -518,15 +526,27 @@
                   </div>
                 </div>
 
-                ${hasOverdue ? `
-                  <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-red-100 text-red-700 border border-red-200 flex items-center gap-1">
-                    <i class="fa-solid fa-triangle-exclamation animate-pulse"></i> Aşı Gecikmiş
-                  </span>
-                ` : `
-                  <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-                    <i class="fa-solid fa-check"></i> Sağlıklı
-                  </span>
-                `}
+                <div class="flex items-center gap-1.5 shrink-0">
+                  ${hasOverdue ? `
+                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-red-100 text-red-700 border border-red-200 flex items-center gap-1">
+                      <i class="fa-solid fa-triangle-exclamation animate-pulse"></i> Aşı Gecikmiş
+                    </span>
+                  ` : `
+                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                      <i class="fa-solid fa-check"></i> Sağlıklı
+                    </span>
+                  `}
+                  <!-- Vefat Kaydı / Sil -->
+                  <button
+                    type="button"
+                    onclick="confirmPetDeceased('${pet.id}')"
+                    title="Vefat Kaydı / Sil"
+                    aria-label="${pet.name} için vefat kaydı oluştur ve sil"
+                    class="w-8 h-8 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 flex items-center justify-center transition-colors"
+                  >
+                    <i class="fa-regular fa-trash-can text-sm"></i>
+                  </button>
+                </div>
               </div>
 
               <!-- Detay grid -->
@@ -761,6 +781,28 @@
     }
 
     // Pasaport sayfasına yönlendir ve aktif hayvanı kaydet
+    // Vefat kaydı: onay al → hayvanı, aşılarını ve randevularını sil → paneli yeniden çiz
+    function confirmPetDeceased(petId) {
+      const pet = VP.pets.get(petId);
+      if (!pet) return;
+
+      const ok = confirm(
+        'Dostunuzun vefat ettiğini onaylıyor musunuz? ' +
+        'Onayladığınızda dijital pasaport kaydı ve bekleyen aşı/randevu takvimi sistemden kaldırılacaktır.'
+      );
+      if (!ok) return;
+
+      const result = VP.deletePet(petId);
+      if (!result) {
+        VP.toast?.show('Kayıt bulunamadı veya zaten silinmiş.', 'error');
+        return;
+      }
+
+      // Hayvan kartları, aşı sayaçları, aşı tablosu ve randevular anında güncellenir
+      renderOwnerDashboard();
+      VP.toast?.show(`🕊️ ${result.pet.name} için vefat kaydı oluşturuldu; pasaport ve takvim kaldırıldı. Başınız sağ olsun.`, 'info', 5000);
+    }
+
     function viewPassport(petId) {
       if (window.VP && VP.activePet) {
         VP.activePet.set(petId);

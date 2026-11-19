@@ -500,6 +500,38 @@ const VP = (() => {
     return newPet;
   };
 
+  /**
+   * Vefat kaydı: hayvanı ve ona ait tüm aşı ve randevu kayıtlarını localStorage'dan siler.
+   * (Sahip devri / sahiplendirme akışı bilinçli olarak yoktur.)
+   * @param {string} petId
+   * @returns {{pet: Object, removedVaccines: number, removedAppointments: number} | null}
+   */
+  const deletePet = (petId) => {
+    const pet = pets.get(petId);
+    if (!pet) return null;
+
+    const allVaccines = vaccines.all();
+    const keptVaccines = allVaccines.filter(v => v.petId !== petId);
+    vaccines.save(keptVaccines);
+
+    const allApts = appointments.all();
+    const keptApts = allApts.filter(a => a.petId !== petId);
+    appointments.save(keptApts);
+
+    pets.remove(petId);
+
+    /* Silinen hayvan aktif seçiliyse işareti temizle */
+    if (ls.getString(KEYS.ACTIVE_PET, '') === petId) {
+      localStorage.removeItem(KEYS.ACTIVE_PET);
+    }
+
+    return {
+      pet,
+      removedVaccines: allVaccines.length - keptVaccines.length,
+      removedAppointments: allApts.length - keptApts.length,
+    };
+  };
+
   /* ── 6. Randevu – Dolu Saat Kilitleme ───────────────── */
 
   /**
@@ -750,6 +782,7 @@ const VP = (() => {
     role,
     session,
     registerPet,
+    deletePet,
     bookAppointment,
     getBookedSlots,
     buildSlotList,
